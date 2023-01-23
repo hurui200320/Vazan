@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Vazan</string>
+    <string name="title_activity_scanner">ScannerActivity</string>
+    <string name="title_activity_print_label">PrintLabelActivity</string>
 </resources>

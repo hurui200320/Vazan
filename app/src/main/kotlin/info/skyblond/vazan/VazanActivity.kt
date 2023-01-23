@@ -3,6 +3,7 @@ package info.skyblond.vazan
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.pm.PackageManager
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import java.util.concurrent.atomic.AtomicBoolean
@@ -35,7 +36,12 @@ abstract class VazanActivity : ComponentActivity() {
         }
     }
 
-    protected fun ensurePermissions(permissions: List<String>) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ensurePermissions(permissionExplanation.keys.toList())
+    }
+
+    private fun ensurePermissions(permissions: List<String>) {
         pendingPermissionFlag.set(true)
         val array = permissions
             .filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
@@ -44,5 +50,4 @@ abstract class VazanActivity : ComponentActivity() {
         requestPermissionLauncher.launch(array)
     }
 
-    protected fun pendingPermission(): Boolean = pendingPermissionFlag.get()
 }

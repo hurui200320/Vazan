@@ -9,29 +9,38 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.aztec.AztecWriter
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.datamatrix.DataMatrixWriter
+import com.google.zxing.pdf417.PDF417Writer
+import com.google.zxing.pdf417.encoder.Dimensions
+import com.google.zxing.qrcode.QRCodeWriter
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import info.skyblond.paperang.PaperangP2
+import info.skyblond.paperang.toByteArrays
+import info.skyblond.vazan.scanner.ScannerActivity
 import info.skyblond.vazan.ui.theme.VazanTheme
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
-import kotlin.random.Random
 
 class PrintLabelActivity : VazanActivity() {
     override val permissionExplanation: Map<String, String> = mutableMapOf<String, String>().apply {
@@ -45,6 +54,180 @@ class PrintLabelActivity : VazanActivity() {
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothManager.adapter
+    }
+
+    private fun parsePrinterAddress(str: String): String? {
+        val rawMac = if (str.contains("deviceId=")) str.split("deviceId=")[1] else str
+        val mac = if (rawMac.length == 12) rawMac.chunked(2).joinToString(":") else rawMac
+        return if (mac.length == 17) mac else null
+    }
+
+    private fun Intent.getBarcodes(): List<Pair<Int, ByteArray>> {
+        val size = this.getLongExtra("size", 0)
+        return (0 until size).map {
+            this.getIntExtra(
+                "format$it",
+                Barcode.FORMAT_UNKNOWN
+            ) to this.getByteArrayExtra("data$it")
+        }.filter { it.first != Barcode.FORMAT_UNKNOWN && it.second != null }
+            .map { it.first to it.second!! }
+    }
+
+    private val scanPrinterAddressLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                val mac = result.data!!.getBarcodes()
+                    .map { String(it.second, Charsets.ISO_8859_1) }
+                    .firstNotNullOfOrNull { parsePrinterAddress(it) }
+                if (mac == null) {
+                    Toast.makeText(this, "Invalid barcode", Toast.LENGTH_LONG).show()
+                } else {
+                    printerAddressState.value = mac
+                }
+            }
+        }
+
+    private val printerAddressState = mutableStateOf("None")
+
+    @SuppressLint("MissingPermission")
+    @Composable
+    private fun PrinterAddress() {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(IntrinsicSize.Max)
+        ) {
+            Text(text = "Printer Address: ${printerAddressState.value}")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            ) {// scan or select
+                Button(onClick = {
+                    scanPrinterAddressLauncher.launch(
+                        Intent(this@PrintLabelActivity, ScannerActivity::class.java)
+                    )
+                }) { Text(text = "Scan") }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(onClick = {
+                    val devices = bluetoothAdapter!!.bondedDevices.toList()
+                    AlertDialog.Builder(this@PrintLabelActivity)
+                        .setTitle("Select printer")
+                        .setSingleChoiceItems(
+                            devices.map { "${it.address} (${it.name})" }
+                                .toTypedArray(), 0
+                        ) { dialog: DialogInterface, choice: Int ->
+                            dialog.dismiss()
+                            printerAddressState.value = devices[choice].address
+                        }.create().show()
+                }) { Text(text = "Select") }
+            }
+        }
+    }
+
+    private val scanPrintedUUIDLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                val uuid = result.data!!.getBarcodes()
+                    .map { String(it.second, Charsets.ISO_8859_1) }
+                    .onEach { println("Result: $it") }
+                    .firstNotNullOfOrNull {
+                        try {
+                            UUID.fromString(it)
+                        } catch (_: Throwable) {
+                            null
+                        }
+                    }
+                if (uuid == null) {
+                    Toast.makeText(this, "Invalid uuid", Toast.LENGTH_LONG).show()
+                } else {
+                    uuidToPrintStates.value = uuid
+                }
+            }
+        }
+
+    private val uuidToPrintStates = mutableStateOf(UUID.randomUUID())
+
+    @SuppressLint("MissingPermission")
+    @Composable
+    private fun UUIDToPrint() {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(IntrinsicSize.Max)
+        ) {
+            Text(text = "UUID: ${uuidToPrintStates.value}")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            ) {// regen or scan
+                Button(onClick = {
+                    // TODO: not collied with existing one?
+                    uuidToPrintStates.value = UUID.randomUUID()
+                }) { Text(text = "Random") }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(onClick = {
+                    scanPrintedUUIDLauncher.launch(
+                        Intent(
+                            this@PrintLabelActivity,
+                            ScannerActivity::class.java
+                        )
+                    )
+                }) { Text(text = "Scan") }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    @Composable
+    private fun PrintButtons() {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(IntrinsicSize.Max)
+        ) {
+            Text(text = "Print barcode")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            ) {
+                Button(
+                    onClick = { printQR() },
+                    enabled = printerAddressState.value.length == 17
+                ) {
+                    Text(text = "QR code")
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(
+                    onClick = { printAztec() },
+                    enabled = printerAddressState.value.length == 17
+                ) {
+                    Text(text = "Aztec")
+                }
+            }
+            Spacer(modifier = Modifier.height(15.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.width(IntrinsicSize.Max)
+            ) {
+                Button(
+                    onClick = { printPDF417() },
+                    enabled = printerAddressState.value.length == 17
+                ) {
+                    Text(text = "PDF417")
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(
+                    onClick = { printDataMatrix() },
+                    enabled = printerAddressState.value.length == 17
+                ) {
+                    Text(text = "Data Matrix")
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,12 +245,14 @@ class PrintLabelActivity : VazanActivity() {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(20.dp)
                     ) {
-
-                        Button(
-                            onClick = { printSomething() }
-                        ) {
-                            Text(text = "print")
-                        }
+                        // printer address
+                        PrinterAddress()
+                        Spacer(modifier = Modifier.height(30.dp))
+                        // uuid to print
+                        UUIDToPrint()
+                        Spacer(modifier = Modifier.height(30.dp))
+                        // print buttons
+                        PrintButtons()
                     }
                 }
             }
@@ -94,50 +279,102 @@ class PrintLabelActivity : VazanActivity() {
             }
         }
 
-    // TODO: input?
-    private val printerAddressStats = mutableStateOf("00:15:83:D1:24:11")
 
     private var p2Cache: PaperangP2? = null
 
     @SuppressLint("MissingPermission")
     @Synchronized
     fun getP2Instance(): PaperangP2 {
+        bluetoothAdapter!!.cancelDiscovery()
         if (p2Cache != null && p2Cache!!.isConnected()) return p2Cache!!
         if (p2Cache != null) { // cached, but closed
             p2Cache!!.close()
             p2Cache = null
         } // create a new one
         ensureBluetoothOpen()
-        val btDevice = bluetoothAdapter!!.getRemoteDevice(printerAddressStats.value)
+        val btDevice = bluetoothAdapter!!.getRemoteDevice(printerAddressState.value)
         bluetoothAdapter!!.cancelDiscovery()
         p2Cache = PaperangP2(btDevice)
         return p2Cache!!
     }
 
-    private fun printSomething() {
+    private fun printBitMatrix(bitMatrix: BitMatrix) {
         val dialog = AlertDialog.Builder(this)
-            .setMessage("Please wait...")
+            .setMessage("Printing...")
             .setCancelable(false)
             .create()
         dialog.show()
         thread {
-            val p2 = getP2Instance()
-            p2.setPaperType()
-            p2.setHeatDensity(100u)
-            // feed space
-            p2.feedToHeadLine(20)
-            p2.sendPrintData(
-                (0..16)
-                    .map { Random.nextBytes(1008) }
-                    .flatMap { it.toList() }.toByteArray()
-            )
-            // feed space
-            p2.feedSpaceLine(250)
-            Thread.sleep(5_000)
-            dialog.dismiss()
+            try {
+                val p2 = getP2Instance()
+                p2.setPaperType()
+                p2.setHeatDensity(100u)
+                p2.feedToHeadLine(30)
+                p2.sendPrintData(bitMatrix.toByteArrays())
+                p2.feedSpaceLine(350)
+                Thread.sleep(3_000)
+            } catch (t: Throwable) {
+                AlertDialog.Builder(this)
+                    .setTitle("Failed to print")
+                    .setMessage(t.message)
+                    .create()
+                    .show()
+            } finally {
+                dialog.dismiss()
+            }
         }
     }
 
+    private fun printQR() {
+        val writer = QRCodeWriter()
+        val bitMatrix = writer.encode(
+            uuidToPrintStates.value.toString(), BarcodeFormat.QR_CODE,
+            PaperangP2.PRINT_BIT_PER_LINE, PaperangP2.PRINT_BIT_PER_LINE,
+            mapOf(
+                EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.H
+            )
+        )
+        printBitMatrix(bitMatrix)
+    }
+
+    private fun printAztec() {
+        val writer = AztecWriter()
+        val bitMatrix = writer.encode(
+            uuidToPrintStates.value.toString(), BarcodeFormat.AZTEC,
+            PaperangP2.PRINT_BIT_PER_LINE, PaperangP2.PRINT_BIT_PER_LINE,
+            mapOf(
+                EncodeHintType.ERROR_CORRECTION to "40"
+            )
+        )
+        printBitMatrix(bitMatrix)
+    }
+
+    private fun printPDF417() {
+        val writer = PDF417Writer()
+        val bitMatrix = writer.encode(
+            uuidToPrintStates.value.toString(), BarcodeFormat.PDF_417,
+            PaperangP2.PRINT_BIT_PER_LINE, Int.MAX_VALUE,
+            mapOf(
+                EncodeHintType.MARGIN to "0",
+                EncodeHintType.ERROR_CORRECTION to 5,
+                EncodeHintType.PDF417_DIMENSIONS to Dimensions(2, 4, 2, 35)
+            )
+        )
+        printBitMatrix(bitMatrix)
+    }
+
+    private fun printDataMatrix() {
+        val writer = DataMatrixWriter()
+        val bitMatrix = writer.encode(
+            uuidToPrintStates.value.toString(), BarcodeFormat.DATA_MATRIX,
+            PaperangP2.PRINT_BIT_PER_LINE, PaperangP2.PRINT_BIT_PER_LINE
+        )
+        printBitMatrix(bitMatrix)
+    }
+
+    /**
+     * When return, the bluetooth is enabled.
+     * */
     private fun ensureBluetoothOpen() {
         if (bluetoothAdapter == null) {
             AlertDialog.Builder(this)
@@ -155,16 +392,6 @@ class PrintLabelActivity : VazanActivity() {
 
         while (!bluetoothAdapter!!.isEnabled) {
             if (pendingEnableBTFlag.get()) continue // waiting for current result
-            // check permission
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_ADMIN
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                if (pendingPermission()) continue
-                ensurePermissions(listOf(Manifest.permission.BLUETOOTH_ADMIN))
-                continue // try next loop
-            }
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             enableBluetoothLauncher.launch(enableBtIntent)
             pendingEnableBTFlag.set(true)
