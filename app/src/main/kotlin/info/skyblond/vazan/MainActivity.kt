@@ -18,29 +18,38 @@ import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import info.skyblond.vazan.database.VazanDatabase
 import info.skyblond.vazan.scanner.ScannerActivity
 import info.skyblond.vazan.ui.theme.VazanTheme
+import java.util.*
 
 class MainActivity : ComponentActivity() {
 
     private val callScannerForResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-                val intent = result.data!!
-                val size = intent.getIntExtra("size", 0)
-                for (i in 0 until size) {
-                    val format = intent.getIntExtra("format$i", -1)
-                    val data = intent.getByteArrayExtra("data$i")
-                    if (format != -1 && data != null) {
-                        Toast.makeText(this, String(data, Charsets.ISO_8859_1), Toast.LENGTH_LONG)
-                            .show()
+                val uuid = result.data!!.getBarcodes()
+                    .firstNotNullOfOrNull {
+                        try {
+                            UUID.fromString(String(it.second, Charsets.ISO_8859_1))
+                        } catch (_: Throwable) {
+                            null
+                        }
                     }
+                if (uuid == null) {
+                    Toast.makeText(this, "Invalid UUID", Toast.LENGTH_LONG).show()
+                } else {
+                    val noteIntent = Intent(this, NoteDetailsActivity::class.java)
+                    noteIntent.putExtra("uuid", uuid.toString())
+                    startActivity(noteIntent)
                 }
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        VazanDatabase.init(this)
 
         setContent {
             VazanTheme {

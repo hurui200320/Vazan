@@ -1,7 +1,9 @@
 package info.skyblond.vazan
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -36,8 +38,10 @@ abstract class VazanActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         ensurePermissions(permissionExplanation.keys.toList())
     }
 
@@ -49,5 +53,10 @@ abstract class VazanActivity : ComponentActivity() {
             .toTypedArray()
         requestPermissionLauncher.launch(array)
     }
+
+    private val scale: Float
+        get() = resources.displayMetrics.density
+
+    protected fun Int.dpToPx(): Int = (this * scale + 0.5f).toInt()
 
 }

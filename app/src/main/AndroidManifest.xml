@@ -21,6 +21,11 @@
         android:theme="@style/Theme.Vazan"
         tools:targetApi="31">
         <activity
+            android:name=".NoteDetailsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_note_details"
+            android:theme="@style/Theme.Vazan" />
+        <activity
             android:name=".scanner.ScannerActivity"
             android:exported="false"
             android:label="@string/title_activity_scanner"

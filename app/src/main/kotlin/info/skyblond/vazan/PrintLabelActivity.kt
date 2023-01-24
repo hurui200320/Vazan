@@ -11,6 +11,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,7 +25,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.aztec.AztecWriter
@@ -36,6 +36,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import info.skyblond.paperang.PaperangP2
 import info.skyblond.paperang.toByteArrays
+import info.skyblond.vazan.database.VazanDatabase
 import info.skyblond.vazan.scanner.ScannerActivity
 import info.skyblond.vazan.ui.theme.VazanTheme
 import java.util.*
@@ -60,17 +61,6 @@ class PrintLabelActivity : VazanActivity() {
         val rawMac = if (str.contains("deviceId=")) str.split("deviceId=")[1] else str
         val mac = if (rawMac.length == 12) rawMac.chunked(2).joinToString(":") else rawMac
         return if (mac.length == 17) mac else null
-    }
-
-    private fun Intent.getBarcodes(): List<Pair<Int, ByteArray>> {
-        val size = this.getLongExtra("size", 0)
-        return (0 until size).map {
-            this.getIntExtra(
-                "format$it",
-                Barcode.FORMAT_UNKNOWN
-            ) to this.getByteArrayExtra("data$it")
-        }.filter { it.first != Barcode.FORMAT_UNKNOWN && it.second != null }
-            .map { it.first to it.second!! }
     }
 
     private val scanPrinterAddressLauncher =
@@ -146,7 +136,17 @@ class PrintLabelActivity : VazanActivity() {
             }
         }
 
-    private val uuidToPrintStates = mutableStateOf(UUID.randomUUID())
+    private fun generateUUID(): UUID {
+        while (true) {
+            val uuid = UUID.randomUUID()
+            // ensure no conflict
+            if (VazanDatabase.useDatabase {
+                    it.noteDao().countNotesByUUID(uuid)
+                } == 0) return uuid
+        }
+    }
+
+    private val uuidToPrintStates = mutableStateOf(generateUUID())
 
     @SuppressLint("MissingPermission")
     @Composable
@@ -163,8 +163,7 @@ class PrintLabelActivity : VazanActivity() {
                 modifier = Modifier.width(IntrinsicSize.Max)
             ) {// regen or scan
                 Button(onClick = {
-                    // TODO: not collied with existing one?
-                    uuidToPrintStates.value = UUID.randomUUID()
+                    uuidToPrintStates.value = generateUUID()
                 }) { Text(text = "Random") }
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(onClick = {
@@ -269,8 +268,7 @@ class PrintLabelActivity : VazanActivity() {
                     .setTitle("Failed to enable Bluetooth")
                     .setMessage("You have to enable the bluetooth so that the app can communicate with the printer.")
                     .setCancelable(false)
-                    .setNeutralButton("Fine") { dialog: DialogInterface, _: Int ->
-                        dialog.dismiss()
+                    .setNeutralButton("Fine") { _: DialogInterface, _: Int ->
                         finish()
                     }
                     .create()
@@ -299,6 +297,7 @@ class PrintLabelActivity : VazanActivity() {
     }
 
     private fun printBitMatrix(bitMatrix: BitMatrix) {
+        uuidToPrintStates.value.toPrintableByteArrays()
         val dialog = AlertDialog.Builder(this)
             .setMessage("Printing...")
             .setCancelable(false)
@@ -311,14 +310,12 @@ class PrintLabelActivity : VazanActivity() {
                 p2.setHeatDensity(100u)
                 p2.feedToHeadLine(30)
                 p2.sendPrintData(bitMatrix.toByteArrays())
+                p2.feedSpaceLine(30)
+                p2.sendPrintData(uuidToPrintStates.value.toPrintableByteArrays())
                 p2.feedSpaceLine(350)
                 Thread.sleep(3_000)
             } catch (t: Throwable) {
-                AlertDialog.Builder(this)
-                    .setTitle("Failed to print")
-                    .setMessage(t.message)
-                    .create()
-                    .show()
+                Log.e("Print", t.message ?: "???")
             } finally {
                 dialog.dismiss()
             }
@@ -382,8 +379,8 @@ class PrintLabelActivity : VazanActivity() {
                 .setMessage("This device has no bluetooth adapter, thus no way to communicate with printer.")
                 .setCancelable(false)
                 .setNeutralButton("Fine") { dialog: DialogInterface, _: Int ->
-                    dialog.dismiss()
                     finish()
+                    dialog.dismiss()
                 }
                 .create()
                 .show()
