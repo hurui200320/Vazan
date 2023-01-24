@@ -35,7 +35,6 @@ import com.google.zxing.pdf417.encoder.Dimensions
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import info.skyblond.paperang.PaperangP2
-import info.skyblond.paperang.toByteArrays
 import info.skyblond.vazan.database.VazanDatabase
 import info.skyblond.vazan.scanner.ScannerActivity
 import info.skyblond.vazan.ui.theme.VazanTheme
