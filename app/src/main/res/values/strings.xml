@@ -3,4 +3,7 @@
     <string name="title_activity_scanner">ScannerActivity</string>
     <string name="title_activity_print_label">PrintLabelActivity</string>
     <string name="title_activity_note_details">NoteDetailsActivity</string>
+    <string name="title_activity_browse_notes">BrowseNotesActivity</string>
+    <string name="title_activity_search_note_content">SearchNoteContentActivity</string>
+    <string name="title_activity_backup">BackupActivity</string>
 </resources>

@@ -9,7 +9,10 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <!-- For barcode scan -->
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- For backup -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -20,6 +23,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Vazan"
         tools:targetApi="31">
+        <activity
+            android:name=".BackupActivity"
+            android:exported="false"
+            android:label="@string/title_activity_backup"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".browse.SearchNoteContentActivity"
+            android:exported="false"
+            android:label="@string/title_activity_search_note_content"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".browse.BrowseNotesActivity"
+            android:exported="false"
+            android:label="@string/title_activity_browse_notes"
+            android:theme="@style/Theme.Vazan" />
         <activity
             android:name=".NoteDetailsActivity"
             android:exported="false"

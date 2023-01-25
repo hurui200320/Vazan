@@ -12,7 +12,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -24,7 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.aztec.AztecWriter
@@ -69,7 +72,7 @@ class PrintLabelActivity : VazanActivity() {
                     .map { String(it.second, Charsets.ISO_8859_1) }
                     .firstNotNullOfOrNull { parsePrinterAddress(it) }
                 if (mac == null) {
-                    Toast.makeText(this, "Invalid barcode", Toast.LENGTH_LONG).show()
+                    showToast("Invalid barcode")
                 } else {
                     printerAddressState.value = mac
                 }
@@ -128,7 +131,7 @@ class PrintLabelActivity : VazanActivity() {
                         }
                     }
                 if (uuid == null) {
-                    Toast.makeText(this, "Invalid uuid", Toast.LENGTH_LONG).show()
+                    showToast("Invalid UUID")
                 } else {
                     uuidToPrintStates.value = uuid
                 }
@@ -155,7 +158,11 @@ class PrintLabelActivity : VazanActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(IntrinsicSize.Max)
         ) {
-            Text(text = "UUID: ${uuidToPrintStates.value}")
+            Text(
+                text = uuidToPrintStates.value.toString().uppercase(),
+                fontFamily = FontFamily.Monospace,
+                fontSize = 16.3.sp
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -173,6 +180,24 @@ class PrintLabelActivity : VazanActivity() {
                         )
                     )
                 }) { Text(text = "Scan") }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(onClick = {
+                    val input = createSingleLineEditText()
+                    AlertDialog.Builder(this@PrintLabelActivity)
+                        .setTitle("Input UUID manually")
+                        .setView(input)
+                        .setCancelable(false) // prevent miss touch
+                        .setPositiveButton("OK") { _, _ ->
+                            val str = input.text.toString()
+                            try {
+                                uuidToPrintStates.value = UUID.fromString(str)
+                            } catch (_: Throwable) {
+                                showToast("Invalid UUID")
+                            }
+                        }
+                        .setCancelButton()
+                        .create().show()
+                }) { Text(text = "Manual") }
             }
         }
     }
@@ -314,7 +339,7 @@ class PrintLabelActivity : VazanActivity() {
                 p2.feedSpaceLine(350)
                 Thread.sleep(3_000)
             } catch (t: Throwable) {
-                Log.e("Print", t.message ?: "???")
+                Log.e(this::class.java.canonicalName, t.message ?: "???")
             } finally {
                 dialog.dismiss()
             }

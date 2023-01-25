@@ -1,10 +1,9 @@
 package info.skyblond.vazan
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -18,12 +17,14 @@ import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import info.skyblond.vazan.browse.BrowseNotesActivity
+import info.skyblond.vazan.browse.SearchNoteContentActivity
 import info.skyblond.vazan.database.VazanDatabase
 import info.skyblond.vazan.scanner.ScannerActivity
 import info.skyblond.vazan.ui.theme.VazanTheme
 import java.util.*
 
-class MainActivity : ComponentActivity() {
+class MainActivity : VazanActivity() {
 
     private val callScannerForResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 if (uuid == null) {
-                    Toast.makeText(this, "Invalid UUID", Toast.LENGTH_LONG).show()
+                    showToast("Invalid UUID")
                 } else {
                     val noteIntent = Intent(this, NoteDetailsActivity::class.java)
                     noteIntent.putExtra("uuid", uuid.toString())
@@ -45,6 +46,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+    override val permissionExplanation: Map<String, String> = emptyMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +91,55 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             Text(text = "Scanner")
+                        }
+
+                        Button(
+                            onClick = {
+                                startActivity(
+                                    Intent(
+                                        this@MainActivity,
+                                        BrowseNotesActivity::class.java
+                                    )
+                                )
+                            }
+                        ) {
+                            Text(text = "Browse")
+                        }
+
+                        Button(
+                            onClick = {
+                                val input = createSingleLineEditText()
+                                AlertDialog.Builder(this@MainActivity)
+                                    .setTitle("Input search keyword")
+                                    .setView(input)
+                                    .setCancelable(false) // prevent miss touch
+                                    .setPositiveButton("OK") { _, _ ->
+                                        val noteIntent =
+                                            Intent(
+                                                this@MainActivity,
+                                                SearchNoteContentActivity::class.java
+                                            )
+                                        noteIntent.putExtra("keyword", input.text.toString())
+                                        startActivity(noteIntent)
+                                    }
+                                    .setCancelButton()
+                                    .create().show()
+                            }
+                        ) {
+                            Text(text = "Search")
+                        }
+
+                        Button(
+                            onClick = {
+                                startActivity(
+                                    Intent(
+                                        this@MainActivity,
+                                        BackupActivity::class.java
+                                    )
+                                )
+                            }
+                        ) {
+                            Text(text = "Backup")
                         }
                     }
                 }
