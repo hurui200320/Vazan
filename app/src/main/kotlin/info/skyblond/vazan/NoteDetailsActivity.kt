@@ -57,7 +57,7 @@ class NoteDetailsActivity : VazanActivity() {
         setContent {
             VazanTheme {
                 Scaffold(
-                    topBar = { TopAppBar { Text(text = uuid.toString().uppercase()) } },
+                    topBar = { TopAppBar { UUIDText(uuid = uuid) } },
                     floatingActionButton = { NoteFAB(uuid) }
                 ) { scaffoldPadding ->
                     // A surface container using the 'background' color from the theme

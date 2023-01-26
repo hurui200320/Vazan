@@ -6,14 +6,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -64,9 +63,9 @@ class MainActivity : VazanActivity() {
                     Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier.padding(20.dp, 40.dp)
                     ) {
-
+                        val spaceHeightFraction = remember { mutableStateOf(0.05f) }
                         Button(
                             onClick = {
                                 startActivity(
@@ -77,9 +76,9 @@ class MainActivity : VazanActivity() {
                                 )
                             }
                         ) {
-                            Text(text = "Printer")
+                            Text(text = "Print")
                         }
-
+                        Spacer(modifier = Modifier.fillMaxHeight(spaceHeightFraction.value))
                         Button(
                             onClick = {
                                 callScannerForResultLauncher.launch(
@@ -90,9 +89,9 @@ class MainActivity : VazanActivity() {
                                 )
                             }
                         ) {
-                            Text(text = "Scanner")
+                            Text(text = "Scan")
                         }
-
+                        Spacer(modifier = Modifier.fillMaxHeight(spaceHeightFraction.value))
                         Button(
                             onClick = {
                                 startActivity(
@@ -105,7 +104,7 @@ class MainActivity : VazanActivity() {
                         ) {
                             Text(text = "Browse")
                         }
-
+                        Spacer(modifier = Modifier.fillMaxHeight(spaceHeightFraction.value))
                         Button(
                             onClick = {
                                 val input = createSingleLineEditText()
@@ -128,7 +127,7 @@ class MainActivity : VazanActivity() {
                         ) {
                             Text(text = "Search")
                         }
-
+                        Spacer(modifier = Modifier.fillMaxHeight(spaceHeightFraction.value))
                         Button(
                             onClick = {
                                 startActivity(

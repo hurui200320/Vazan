@@ -23,11 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.aztec.AztecWriter
@@ -89,7 +85,7 @@ class PrintLabelActivity : VazanActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(IntrinsicSize.Max)
         ) {
-            Text(text = "Printer Address: ${printerAddressState.value}")
+            OneLineText(text = "Printer Address: ${printerAddressState.value}")
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -158,11 +154,7 @@ class PrintLabelActivity : VazanActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(IntrinsicSize.Max)
         ) {
-            Text(
-                text = uuidToPrintStates.value.toString().uppercase(),
-                fontFamily = FontFamily.Monospace,
-                fontSize = 16.3.sp
-            )
+            UUIDText(uuid = uuidToPrintStates.value)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -210,7 +202,7 @@ class PrintLabelActivity : VazanActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(IntrinsicSize.Max)
         ) {
-            Text(text = "Print barcode")
+            OneLineText(text = "Print barcode")
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
