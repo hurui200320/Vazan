@@ -329,8 +329,14 @@ class PrintLabelActivity : VazanActivity() {
                 p2.feedSpaceLine(30)
                 p2.sendPrintData(uuidToPrintStates.value.toPrintableByteArrays())
                 p2.feedSpaceLine(350)
-                Thread.sleep(3_000)
+                Thread.sleep(5_000)
+                runOnUiThread {
+                    showToast("Print succeed")
+                }
             } catch (t: Throwable) {
+                runOnUiThread {
+                    showToast("Failed to print")
+                }
                 Log.e(this::class.java.canonicalName, t.message ?: "???")
             } finally {
                 dialog.dismiss()
