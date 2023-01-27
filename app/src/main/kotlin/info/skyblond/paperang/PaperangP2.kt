@@ -23,7 +23,6 @@ class PaperangP2(
         private val COMMAND_PRINT_DATA = 0.toUByte()
         private val COMMAND_SET_HEAT_DENSITY = 25.toUByte()
         private val COMMAND_FEED_LINE = 26.toUByte()
-        private val COMMAND_PRINT_TEST_PAGE = 27.toUByte()
         private val COMMAND_FEED_TO_HEAD_LINE = 33.toUByte()
         private val COMMAND_SET_PAPER_TYPE = 44.toUByte()
     }
@@ -48,7 +47,7 @@ class PaperangP2(
     ) {
         companion object {
             fun read(inputStream: InputStream): Packet? {
-                var r = -1
+                var r: Int
                 do {
                     r = inputStream.read()
                 } while (r != -1 && r != 0x02)
@@ -129,28 +128,6 @@ class PaperangP2(
 
     /**
      * Send print data to printer.
-     * @param data raw array of lines, aka [b0l0, b1l0, ..., b71l0, b0l1, ..., bNlN].
-     * There must be full line only.
-     * */
-    fun sendPrintData(data: ByteArray) {
-        require(data.size % PRINT_BYTE_PER_LINE == 0) { "Not full line" }
-        val lineCount = data.size / PRINT_BYTE_PER_LINE
-        val lines = Array(lineCount) { ByteArray(PRINT_BYTE_PER_LINE) }
-
-        var dataPos = 0
-        for (line in lines) { // for each line
-            System.arraycopy(
-                data, dataPos,
-                line, 0, PRINT_BYTE_PER_LINE
-            )
-            dataPos += PRINT_BYTE_PER_LINE
-        }
-
-        sendPrintData(lines)
-    }
-
-    /**
-     * Send print data to printer.
      * @param lines array of lines, each element is a full line, size of [PRINT_BYTE_PER_LINE]
      * */
     fun sendPrintData(lines: Array<ByteArray>) {
@@ -208,16 +185,6 @@ class PaperangP2(
     fun feedSpaceLine(amount: Short) {
         sendPacket(
             Packet(COMMAND_FEED_LINE, 0u, amount.toLittleEndian()), true
-        )
-    }
-
-
-    /**
-     * Print a default test page.
-     * */
-    fun printTestPage() {
-        sendPacket(
-            Packet(COMMAND_PRINT_TEST_PAGE, 0u, byteArrayOf()), true
         )
     }
 
