@@ -40,15 +40,25 @@ class PaperangP2(
 
     fun isConnected(): Boolean = btSocket.isConnected
 
+    /**
+     * This class represent a packet in paperang protocol.
+     * */
     data class Packet(
         val command: UByte,
         val packetIndex: UByte,
         val data: ByteArray
     ) {
         companion object {
-            fun read(inputStream: InputStream): Packet? {
+
+            /**
+             * Read 1 packet from the given [inputStream]. Return null if no valid packet was found.
+             *
+             * Normally, the packet is ignored if crc is invalid. To get those invalid packet,
+             * set [ignoreCRC] to true.
+             * */
+            fun read(inputStream: InputStream, ignoreCRC: Boolean = false): Packet? {
                 var r: Int
-                do {
+                do { // skip to the start of a packet
                     r = inputStream.read()
                 } while (r != -1 && r != 0x02)
                 if (r == -1) return null
@@ -68,7 +78,7 @@ class PaperangP2(
                     it.update(data, 0, data.size)
                     it.value
                 }
-                return if (calcCrc.contentEquals(crc)) {
+                return if (ignoreCRC || calcCrc.contentEquals(crc)) {
                     Packet(command, packetIndex, data)
                 } else {
                     null // failed crc check
@@ -76,8 +86,13 @@ class PaperangP2(
             }
         }
 
+        /**
+         * Write a packet into the given [outputStream]. Return ture if success.
+         * Return false if and only if the packet has too much data (the size of [Packet.data]
+         * is bigger than [MAX_PACKET_SIZE_IN_BYTE])
+         * */
         fun send(outputStream: OutputStream): Boolean {
-            if (data.size >= Short.MAX_VALUE) return false // data to big
+            if (data.size > MAX_PACKET_SIZE_IN_BYTE) return false // data to big
             outputStream.write(0x02) // packet start
             outputStream.write(command.toInt())
             outputStream.write(packetIndex.toInt())

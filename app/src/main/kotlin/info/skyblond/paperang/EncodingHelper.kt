@@ -28,6 +28,6 @@ internal fun bytesToShort(lb: Byte, hb: Byte): Short {
     var result = 0
     result = result or lb.toInt()
     result = result or (hb.toInt() shl Byte.SIZE_BITS)
-    return (result and 0xffff).toShort()
+    return result.toShort()
 }
 

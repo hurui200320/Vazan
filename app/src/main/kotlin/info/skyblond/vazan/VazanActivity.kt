@@ -11,17 +11,13 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.setPadding
-import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class VazanActivity : ComponentActivity() {
     protected abstract val permissionExplanation: Map<String, String>
 
-    private val pendingPermissionFlag = AtomicBoolean(false)
-
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        pendingPermissionFlag.set(false)
         permissions.forEach { (permission, isGranted) ->
             if (!isGranted) {
                 AlertDialog.Builder(this)
@@ -49,12 +45,12 @@ abstract class VazanActivity : ComponentActivity() {
     }
 
     private fun ensurePermissions(permissions: List<String>) {
-        pendingPermissionFlag.set(true)
         val array = permissions
             .filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
             .onEach { require(permissionExplanation.containsKey(it)) { "Unexplainable permission $it" } }
             .toTypedArray()
-        requestPermissionLauncher.launch(array)
+        if (array.isNotEmpty())
+            requestPermissionLauncher.launch(array)
     }
 
     private val scale: Float
