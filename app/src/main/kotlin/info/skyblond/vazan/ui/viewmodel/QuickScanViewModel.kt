@@ -57,11 +57,11 @@ class QuickScanViewModel @Inject constructor(
     }
 
     fun processMoveToBox(str: String, callBack: (String) -> Unit) = viewModelScope.launch {
+        if (str.take(1) != LabelEncoding.LabelType.BOX.prefix) {
+            showToast("Please scan only box label"); return@launch
+        }
         val label = labelRepo.getLabelById(str) ?: kotlin.run {
             showToast("Label not found, please re-sync database"); return@launch
-        }
-        if (label.labelId.take(1) != LabelEncoding.LabelType.BOX.prefix) {
-            showToast("Please scan only box label"); return@launch
         }
         val entryId = label.entryId ?: kotlin.run {
             showToast("Entry not found, please re-sync database"); return@launch

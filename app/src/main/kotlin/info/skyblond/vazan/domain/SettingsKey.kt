@@ -6,6 +6,7 @@ enum class SettingsKey(
     val validator: (String) -> Boolean
 ) {
     APP_LAST_PRINTER_ADDRESS("app.thermal_printer.last_address", true, { it.isNotBlank() }),
+    APP_LAST_PRINTER_PAPER("app.thermal_printer.last_paper", true, { it.isNotBlank() }),
 
     MEMENTO_API_KEY("memento.api_key", true, { it.isNotBlank() }),
 

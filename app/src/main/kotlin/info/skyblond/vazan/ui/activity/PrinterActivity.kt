@@ -36,14 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.domain.PaperSize
 import info.skyblond.vazan.ui.composable.OneLineText
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.VazanTheme
 import info.skyblond.vazan.ui.viewmodel.PrinterViewModel
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class PrinterActivity : VazanActivity() {
@@ -77,7 +75,7 @@ class PrinterActivity : VazanActivity() {
             return
         }
         viewModel.showToast = { showToast(it) }
-        viewModel.loadLastPrinterAddress()
+        viewModel.loadLastPrinterParam()
         setContent {
             VazanTheme {
                 // A surface container using the 'background' color from the theme
@@ -92,7 +90,7 @@ class PrinterActivity : VazanActivity() {
                     ) {
                         Card {
                             Image(
-                                bitmap = viewModel.paperSize.generatePreview(viewModel.label)
+                                bitmap = viewModel.getPaperSize().generatePreview(viewModel.label)
                                     .asImageBitmap(),
                                 contentDescription = "label preview",
                                 contentScale = ContentScale.Fit,
@@ -132,21 +130,20 @@ class PrinterActivity : VazanActivity() {
                         }
                         Spacer(modifier = Modifier.fillMaxHeight(0.02f))
                         Text(
-                            text = "Paper: ${viewModel.paperSize.let { it.displayName + ", gap " + it.gap + " mm" }}",
+                            text = "Paper: ${viewModel.getPaperSize().let { it.displayName + ", gap " + it.gap + " mm" }}",
                             modifier = Modifier
                                 .padding(10.dp)
                                 .clickable {
-                                    val list = PaperSize.values()
                                     AlertDialog
                                         .Builder(this@PrinterActivity)
                                         .setTitle("Select paper size")
                                         .setSingleChoiceItems(
-                                            list
+                                            PaperSize.values()
                                                 .map { "${it.displayName}, gap ${it.gap} mm" }
-                                                .toTypedArray(), 0
+                                                .toTypedArray(), viewModel.paperSelection
                                         ) { dialog: DialogInterface, choice: Int ->
                                             dialog.dismiss()
-                                            viewModel.paperSize = list[choice]
+                                            viewModel.paperSelection = choice
                                         }
                                         .create()
                                         .show()

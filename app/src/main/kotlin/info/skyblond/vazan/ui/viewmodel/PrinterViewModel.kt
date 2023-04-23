@@ -13,8 +13,6 @@ import info.skyblond.vazan.domain.PaperSize
 import info.skyblond.vazan.domain.SettingsKey
 import info.skyblond.vazan.domain.repository.ConfigRepository
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -25,8 +23,8 @@ class PrinterViewModel @Inject constructor(
 ) : ViewModel() {
     private val sppUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     var label by mutableStateOf("")
-    var paperSize by mutableStateOf(PaperSize.PAPER_80_60_2)
     var printerAddress by mutableStateOf("none")
+    var paperSelection by mutableStateOf(0)
 
     var repeat by mutableStateOf(1)
     var printing by mutableStateOf(false)
@@ -35,10 +33,16 @@ class PrinterViewModel @Inject constructor(
 
     lateinit var showToast: (String) -> Unit
 
-    fun loadLastPrinterAddress() = viewModelScope.launch {
+    fun loadLastPrinterParam() = viewModelScope.launch {
         val addr = configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_ADDRESS.key)?.value
         if (addr != null) printerAddress = addr
+
+        val paper =
+            configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_PAPER.key)?.value?.toIntOrNull()
+        if (paper != null) paperSelection = paper.coerceIn(0, PaperSize.values().size - 1)
     }
+
+    fun getPaperSize() = PaperSize.values()[paperSelection]
 
     @SuppressLint("MissingPermission")
     fun print(onSuccess: () -> Unit) {
@@ -48,7 +52,7 @@ class PrinterViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 try {
-                    val data = paperSize.generatePrintData(label, repeat)
+                    val data = getPaperSize().generatePrintData(label, repeat)
                     val btDevice = bluetoothAdapter.getRemoteDevice(printerAddress)
                     bluetoothAdapter.cancelDiscovery()
                     btDevice.createRfcommSocketToServiceRecord(sppUUID).use { socket ->
@@ -56,7 +60,7 @@ class PrinterViewModel @Inject constructor(
                         socket.outputStream.write(data)
                         socket.outputStream.flush()
                         delay(2000)
-                        loop@while (true) {
+                        loop@ while (true) {
                             // query status
                             socket.outputStream.write(byteArrayOf(126, 33, 84, 13, 10))
                             socket.outputStream.flush()
@@ -75,8 +79,12 @@ class PrinterViewModel @Inject constructor(
                         showToast("Print success")
                         configRepo.insertOrUpdateConfig(
                             Config(
-                                SettingsKey.APP_LAST_PRINTER_ADDRESS.key,
-                                printerAddress
+                                SettingsKey.APP_LAST_PRINTER_ADDRESS.key, printerAddress
+                            )
+                        )
+                        configRepo.insertOrUpdateConfig(
+                            Config(
+                                SettingsKey.APP_LAST_PRINTER_PAPER.key, paperSelection.toString()
                             )
                         )
                         onSuccess()

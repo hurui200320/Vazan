@@ -158,8 +158,6 @@ class SettingsActivity : VazanActivity(), CoroutineScope {
                             }
                             item { Divider() }
                             item { TextConfig(settingKey = SettingsKey.MEMENTO_SYNC_VERSION) }
-                            item { Divider() }
-                            item { TextConfig(settingKey = SettingsKey.APP_LAST_PRINTER_ADDRESS) }
                         }
                     }
                 }
