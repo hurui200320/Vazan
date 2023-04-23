@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- For memento apis -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- For bluetooth RFCOMM -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -8,13 +10,13 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <!-- For barcode scan -->
-    <uses-permission android:name="android.permission.CAMERA" />
     <!-- For backup -->
+    <!-- We need support this, the oldest device I got is android 9 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
+        android:name=".VazanApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -23,44 +25,52 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Vazan"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode_ui" />
+
         <activity
-            android:name=".BackupActivity"
+            android:name=".ui.activity.SyncActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sync"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".ui.activity.GenerateLabelActivity"
+            android:exported="false"
+            android:label="@string/title_activity_generate_label"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".ui.activity.PrinterActivity"
+            android:exported="false"
+            android:label="@string/title_activity_printer"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".ui.activity.QuickScanActivity"
+            android:exported="false"
+            android:label="@string/title_activity_quick_scan"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".ui.activity.MoveToActivity"
+            android:exported="false"
+            android:label="@string/title_activity_move_to"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".ui.activity.SettingsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".ui.activity.BackupActivity"
             android:exported="false"
             android:label="@string/title_activity_backup"
             android:theme="@style/Theme.Vazan" />
         <activity
-            android:name=".browse.SearchNoteContentActivity"
-            android:exported="false"
-            android:label="@string/title_activity_search_note_content"
-            android:theme="@style/Theme.Vazan" />
-        <activity
-            android:name=".browse.BrowseNotesActivity"
-            android:exported="false"
-            android:label="@string/title_activity_browse_notes"
-            android:theme="@style/Theme.Vazan" />
-        <activity
-            android:name=".NoteDetailsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_note_details"
-            android:theme="@style/Theme.Vazan" />
-        <activity
-            android:name=".scanner.ScannerActivity"
-            android:exported="false"
-            android:label="@string/title_activity_scanner"
-            android:theme="@style/Theme.Vazan" />
-        <activity
-            android:name=".PrintLabelActivity"
-            android:exported="false"
-            android:label="@string/title_activity_print_label"
-            android:theme="@style/Theme.Vazan" />
-        <activity
-            android:name=".MainActivity"
+            android:name=".ui.activity.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.Vazan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

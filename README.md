@@ -1,14 +1,18 @@
 # Vazan
 
-This is a storage management app that fit my own needs. This is also my (officially) first android
-app. I tried to develop android app multiple times before, but those eventually ended up into trash
-bins, so those don't count.
+**_Note: This branch is V2, a completely rewrite. For the v1, see branch `old-archive`._**
+
+This is a supplementary app for [Memento Database](https://mementodatabase.com/) that fit my own needs
+(for personal inventory management).
+
+Also, this is my (officially) first android app. I tried to develop android app multiple times before,
+but those eventually ended up into trash bins, so they don't count.
 
 ## Why I need this?
 
 Several times a year, I need to pack all my stuff and move. After moving to a new place, I don't
 unpack all things immediately. When I need to find exactly one specific object, it would be a
-nightmare to go through all boxes: unpack, dump out all things, not found, repack.
+nightmare to go through all boxes: unpack, dump out all things, not found the thing, repack the mess.
 
 One day I was picking up a package, I saw the waybill on the box. I thought, why don't I print
 something and stick it to the box, so I can find out what inside without actually open it? So I
@@ -16,50 +20,119 @@ wrote this app.
 
 ## What it does?
 
-To "print" something, I mean print something using a thermal printer. It requires certain types of
-paper to heat/print, and the heated part will become black. It can't print color, but good enough
-for printing barcodes and text.
+First of all, in V2, all data is stored in the memento database, an Android/iOS app that offers
+something like a database, but not technically the relational database. However, it support barcode
+and foreign key (the ability to reference other entities in a library/table), and is pretty good to
+use.
 
-I use Paperang P2, a 300dpi printer using 57mm wide thermal paper (576 dot per line). I will use
-thermal label sticker so I can stick it to the box without any additional tape and glue. However,
-this is not a open product. Actually, it's illegal to reverse engineer the software, but thanks to
-github and google, I found some datasheet that at least working from my side.
+> Note: Memento database does require a subscription to unlock the full feature (cloud thing), and
+> this app uses the cloud api they offer. So technically speaking, there is a paywall.
 
-The printer part is somehow awkward: Commercial 2C products are not open, they try to lock you into
-their app and environment, but it does have some good features, like high print DPI, portable (with
-battery). Commercial 2B products are open, they will give you their SDKs and glad to see you
-supporting their devices, but most of them are big and rely on wall power. **If there are any
-portable opensource bluetooth thermal printer, I'm supper glad to know and support it.**
+Despite Memento database offers a great way to store data and to interact with them (the UI part is
+the most important part, I could never make something like that, frontend is just too hard to me),
+it doesn't know how to print labels.
 
-This app use bluetooth to communicate with the printer, aka RFCOMM,
-see [hurui200320/java-paperang-p2-usb](https://github.com/hurui200320/java-paperang-p2-usb)
-for more info about the protocol.
+By design, you print label stickers (normally using thermal printer) and stick them to your containers
+and items, then use memento database to link those stickers (barcode) to the box/item. Now you can
+find all your items on your phone. To print those stickers, you have to make sure they are unique.
+Otherwise you will have two box with same barcode. But how?
 
-There are 4 types of barcode: QR code, Aztec, PDF417 and Data Matrix, they all have some certain of
-error correction to resist damage. Also, it will print the human readable text below the barcode. If
-the code is unreadable, you can manually type the text and find related info.
+The simplest solution is to use the memento database's export function. Export your existing barcodes
+into a CSV file, and somehow make sure you don't print the existing label again. But that requires
+software support. A lot of software can print data from a excel, but can't generate data to avoid a
+given excel.
 
-For storage, I use local SQLite database. Each box are assigned with a UUID. The content of the
-barcode is the string value of a uuid. For each UUID, you can have multiple immutable notes, with
-creation time recorded, so you can know what is put inside and when was took out.
+Yeah, I know, you can write a simple Java/Python/Shell script to do that. But do you really want to
+use your laptop when you're moving? It's already a mess, and you add more. However, using a phone will
+not contribute to the mess. So I wrote this app.
 
-To record a new box, first print some barcode and stick it to the box. Then scan the barcode, or
-type in UUID manually, then you can add notes. When you need to find something, just search the item
-name and it will find all UUIDs that contains related notes. And you can find the box based on the
-printed label/sticker, which has a human readable uuid on it.
+By using the memento database's cloud api, this app can "sync", aka read your existing labels (box
+and item), store in it local cache. When generating new label, the app will avoid those existing ones,
+and ensure each time new one will be printed. Also, the app will track which label is printed, so you
+don't accidentally print two identical labels in different time.
 
-This app also came with a backup feature. You can export all notes into a JSON file, and import it
-later.
+Besides, the app support "quick scan". For example, you're moving 10 box to a new location. To apply
+that change, you have to search the box and change the location, which requires multiple click on screen.
+The quick scan let you select one location, then scan multiple labels, send the change request to cloud.
+No need to click on screen anymore, just scan it.
 
-## Used tech
+## What about print?
 
-+ [Compose](https://developer.android.com/jetpack/compose) for UI (I hate XML)
-+ [Room](https://developer.android.com/training/data-storage/room) for SQLite
-+ [Material Design](https://m2.material.io/develop/android) for a good out-of-box visual look
-+ [camerax](https://developer.android.com/training/camerax)
-  and [ml kit](https://developers.google.com/ml-kit/vision/barcode-scanning) for scanning and
-  decoding barcode
-+ [zxing](https://github.com/zxing/zxing) for generating barcodes
-+ [Kotlin](https://kotlinlang.org) for programming
+The print part makes this app not easy to use. Since the printer driver is hardcoded.
 
-Thanks all related developers for sharing the protocol details for paperang P2.
+My thermal printer is G-Printer GP-M322. This is not the best thermal printer (can't print decent 
+pictures), but it does print labels, and print them really well. And most important, is that G-Printer
+offers SDK. Although the SDK is old and not-well-organized, the protocol is open. I implement my
+own driver for this printer, and it works well. In v1 I use paperang P2, which has no public documents,
+not mention SDKs.
+
+About labels, I use two different barcodes. For box, you got a lot of space to stick, thus I use 
+Data Matrix with a vertical layout:
+
+```
+ ┌───────────────────────────────┐
+ │                               │
+ │      ┌─────────────────┐      │
+ │      │                 │      │
+ │      │   DATA MATRIX   │      │
+ │      │     BARCODE     │      │
+ │      │                 │      │
+ │      └─────────────────┘      │
+ │                               │
+ │   The human readable label    │
+ │                               │
+ └───────────────────────────────┘
+```
+
+The data matrix offers a decent error correction, but in case the barcode is not working, there are
+also the text label for human to read. The encoding is special: it use digits and uppercase letter,
+but without digits 0 and 1, and letter o and i, thus you won't have to guess if a character is O or 0,
+1 or I.
+
+For item, I use code128, which is a slim barcode, which considered the limited space you have on a item:
+
+```
+ ┌─────────────────────────────────────────────────────────────┐
+ │      ┌───────────────────────────────────────────────┐      │
+ │      │                 CODE128 BARCODE               │      │
+ │      └───────────────────────────────────────────────┘      │
+ │                 The human readable label                    │
+ └─────────────────────────────────────────────────────────────┘
+```
+
+## What about memento's cloud API?
+
+To use their api, you firstly need an API key, which can be created on their desktop software.
+The API key must have read and write permission, and the libraries can only contains your 3 essential
+libraries.
+
+There are 3 libraries required: Location, Box and item.
+
+The Location must has a text field for the location, like "XX, YY str., ZZ city", so you can distinguish
+it in the app.
+
+The Box must has a barcode field for label, you may set it as read-only so you won't accidentally changed it.
+Also it requires a parent location field liked to location, and a parent box field like to box. The box
+can be located in one location, or in other boxes.
+
+The item is same, a barcode field for label, a parent location field liked to location, and a parent
+box field like to box.
+
+The barcode field is not required (you can have unlabeled box and items), but this app requires a
+label/barcode to index the item.
+
+Also, the API has rate limit. For personal plan, the limit is 30 request per minutes, thus I have some
+hardcoded delay in the code to ease the rate limit.
+
+## What about my data?
+
+No data will be uploaded to me. It only send request to memento's cloud using your API key.
+
+To backup your local database (the one for app storing labels, settings), you can export them
+as a bencode file, and import it later.
+
+## But how can I use it?
+
+As I said, this is an app for my own need, so there is no public build to install. However, if this
+app _accidentally_ fit your needs too, and you _accidentally_ want to use this app, with **no guaranteed
+support or updates from me**, then feel free to open an issue, or send me an email, I'm glad to help.

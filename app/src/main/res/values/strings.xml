@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">Vazan</string>
-    <string name="title_activity_scanner">ScannerActivity</string>
-    <string name="title_activity_print_label">PrintLabelActivity</string>
-    <string name="title_activity_note_details">NoteDetailsActivity</string>
-    <string name="title_activity_browse_notes">BrowseNotesActivity</string>
-    <string name="title_activity_search_note_content">SearchNoteContentActivity</string>
     <string name="title_activity_backup">BackupActivity</string>
+    <string name="title_activity_move_to">MoveToActivity</string>
+    <string name="title_activity_quick_scan">QuickScanActivity</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_sync">SyncActivity</string>
+    <string name="title_activity_generate_label">GenerateLabelActivity</string>
+    <string name="title_activity_printer">PrinterActivity</string>
 </resources>
