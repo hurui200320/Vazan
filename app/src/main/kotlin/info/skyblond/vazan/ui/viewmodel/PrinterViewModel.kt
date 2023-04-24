@@ -12,8 +12,10 @@ import info.skyblond.vazan.data.room.Config
 import info.skyblond.vazan.domain.PaperSize
 import info.skyblond.vazan.domain.SettingsKey
 import info.skyblond.vazan.domain.repository.ConfigRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 
@@ -47,52 +49,56 @@ class PrinterViewModel @Inject constructor(
     @SuppressLint("MissingPermission")
     fun print(onSuccess: () -> Unit) {
         if (!bluetoothAdapter.isEnabled) {
-            viewModelScope.launch { showToast("Bluetooth is not enabled") }
+            showToast("Bluetooth is not enabled")
             printing = false
         } else {
             viewModelScope.launch {
-                try {
-                    val data = getPaperSize().generatePrintData(label, repeat)
-                    val btDevice = bluetoothAdapter.getRemoteDevice(printerAddress)
-                    bluetoothAdapter.cancelDiscovery()
-                    btDevice.createRfcommSocketToServiceRecord(sppUUID).use { socket ->
-                        socket.connect()
-                        socket.outputStream.write(data)
-                        socket.outputStream.flush()
-                        delay(2000)
-                        loop@ while (true) {
-                            // query status
-                            socket.outputStream.write(byteArrayOf(126, 33, 84, 13, 10))
+                withContext(Dispatchers.IO) {
+                    try {
+                        val data = getPaperSize().generatePrintData(label, repeat)
+                        val btDevice = bluetoothAdapter.getRemoteDevice(printerAddress)
+                        bluetoothAdapter.cancelDiscovery()
+                        btDevice.createRfcommSocketToServiceRecord(sppUUID).use { socket ->
+                            socket.connect()
+                            withContext(Dispatchers.Main) { showToast("Sending command...") }
+                            socket.outputStream.write(data)
                             socket.outputStream.flush()
-                            delay(1000)
-                            var b: Int
-                            do {
-                                b = socket.inputStream.read()
-                                if (b != -1 && b and 0x20 == 0) {
-                                    // bit 5 is 0 -> print finished
-                                    break@loop
-                                }
-                                delay(500)
-                            } while (b == -1)
+                            delay(2000)
+                            loop@ while (true) {
+                                // query status
+                                socket.outputStream.write(byteArrayOf(126, 33, 84, 13, 10))
+                                socket.outputStream.flush()
+                                delay(1000)
+                                var b: Int
+                                do {
+                                    b = socket.inputStream.read()
+                                    if (b != -1 && b and 0x20 == 0) {
+                                        // bit 5 is 0 -> print finished
+                                        break@loop
+                                    }
+                                    delay(500)
+                                } while (b == -1)
+                            }
+                            socket.close()
+                            withContext(Dispatchers.Main) { showToast("Print success") }
+                            configRepo.insertOrUpdateConfig(
+                                Config(
+                                    SettingsKey.APP_LAST_PRINTER_ADDRESS.key, printerAddress
+                                )
+                            )
+                            configRepo.insertOrUpdateConfig(
+                                Config(
+                                    SettingsKey.APP_LAST_PRINTER_PAPER.key,
+                                    paperSelection.toString()
+                                )
+                            )
+                            onSuccess()
                         }
-                        socket.close()
-                        showToast("Print success")
-                        configRepo.insertOrUpdateConfig(
-                            Config(
-                                SettingsKey.APP_LAST_PRINTER_ADDRESS.key, printerAddress
-                            )
-                        )
-                        configRepo.insertOrUpdateConfig(
-                            Config(
-                                SettingsKey.APP_LAST_PRINTER_PAPER.key, paperSelection.toString()
-                            )
-                        )
-                        onSuccess()
+                    } catch (t: Throwable) {
+                        withContext(Dispatchers.Main) { showToast("Print failed: ${t.message}") }
+                    } finally {
+                        printing = false
                     }
-                } catch (t: Throwable) {
-                    viewModelScope.launch { showToast("Print failed: ${t.message}") }
-                } finally {
-                    printing = false
                 }
             }
         }
