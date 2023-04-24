@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
@@ -29,7 +30,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.VazanTheme
 import info.skyblond.vazan.ui.viewmodel.BackupViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -37,10 +40,12 @@ import java.time.format.DateTimeFormatter
 class BackupActivity : VazanActivity() {
     private val viewModel: BackupViewModel by viewModels()
 
-    override val permissionExplanation: Map<String, String> = mapOf(
-        Manifest.permission.WRITE_EXTERNAL_STORAGE to "writing backup files",
-        Manifest.permission.READ_EXTERNAL_STORAGE to "reading backup files",
-    )
+    override val permissionExplanation: Map<String, String> = buildMap {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            put(Manifest.permission.WRITE_EXTERNAL_STORAGE, "writing backup files")
+            put(Manifest.permission.READ_EXTERNAL_STORAGE, "reading backup files")
+        }
+    }
 
     private val selectExportLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -54,10 +59,13 @@ class BackupActivity : VazanActivity() {
                 dialog.show()
                 viewModel.viewModelScope.launch {
                     try {
-                        contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            outputStream.bufferedWriter(Charsets.UTF_8).use { writer ->
-                                viewModel.database.export(writer)
+                        withContext(Dispatchers.IO) {
+                            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                                outputStream.bufferedWriter(Charsets.UTF_8).use { writer ->
+                                    viewModel.database.export(writer)
+                                }
                             }
+                        }?.also {
                             showToast("Exported succeed!")
                         } ?: kotlin.run { showToast("Export failed: URI unavailable") }
                     } catch (t: Throwable) {
@@ -94,12 +102,15 @@ class BackupActivity : VazanActivity() {
                 dialog.show()
                 viewModel.viewModelScope.launch {
                     try {
-                        contentResolver.openInputStream(uri)?.use { inputStream ->
-                            inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
-                                viewModel.database.import(reader)
+                        withContext(Dispatchers.IO) {
+                            contentResolver.openInputStream(uri)?.use { inputStream ->
+                                inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                                    viewModel.database.import(reader)
+                                }
                             }
+                        }?.also {
+                            showToast("Import succeed!")
                         } ?: kotlin.run { showToast("Import failed: URI unavailable") }
-                        showToast("Import succeed!")
                     } catch (t: Throwable) {
                         showToast("Failed to import json")
                     }
@@ -111,7 +122,6 @@ class BackupActivity : VazanActivity() {
     private fun doImport() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.type = "*/*"
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/octet-stream"))
         intent.putExtra(
             DocumentsContract.EXTRA_INITIAL_URI,
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toUri()
