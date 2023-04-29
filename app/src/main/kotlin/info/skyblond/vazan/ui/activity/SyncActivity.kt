@@ -19,13 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.data.room.Label
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.VazanTheme
 import info.skyblond.vazan.ui.viewmodel.SyncViewModel
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SyncActivity : VazanActivity() {

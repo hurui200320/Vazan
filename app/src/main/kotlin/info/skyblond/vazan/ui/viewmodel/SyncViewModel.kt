@@ -14,8 +14,6 @@ import info.skyblond.vazan.domain.repository.ConfigRepository
 import info.skyblond.vazan.domain.repository.LabelRepository
 import info.skyblond.vazan.domain.repository.MementoRepository
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,7 +35,7 @@ class SyncViewModel @Inject constructor(
 
     private fun updateLastSyncTimestamp() = viewModelScope.launch {
         lastSyncTimestamp =
-            configRepository.getConfigByKey(SettingsKey.MEMENTO_SYNC_VERSION.key)?.value?.toLong()
+            configRepository.getConfigByKey(SettingsKey.MEMENTO_SYNC_VERSION)?.value?.toLong()
                 ?: 0L
     }
 
@@ -50,11 +48,11 @@ class SyncViewModel @Inject constructor(
         fieldIdSettingsKey: SettingsKey,
         count: () -> Unit
     ) {
-        val libId = configRepository.getConfigByKey(libraryIdSettingsKey.key)?.value ?: kotlin.run {
+        val libId = configRepository.getConfigByKey(libraryIdSettingsKey)?.value ?: kotlin.run {
             showToast("Library ID not found, please check your settings")
             return
         }
-        val fieldId = configRepository.getConfigByKey(fieldIdSettingsKey.key)?.value?.toIntOrNull()
+        val fieldId = configRepository.getConfigByKey(fieldIdSettingsKey)?.value?.toIntOrNull()
             ?: kotlin.run {
                 showToast("Field ID not found, please check your settings")
                 return
@@ -67,7 +65,7 @@ class SyncViewModel @Inject constructor(
                 val entryId = entry.id
                 val label = Label(
                     labelId = labelId, status = Label.Status.IN_USE,
-                    version = currentSyncingVersion, entryId = entryId
+                    version = currentSyncingVersion, entityId = entryId
                 )
                 labelRepository.insertOrUpdateLabel(label)
                 count()

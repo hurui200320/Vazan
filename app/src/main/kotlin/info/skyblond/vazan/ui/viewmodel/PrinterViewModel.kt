@@ -36,11 +36,11 @@ class PrinterViewModel @Inject constructor(
     lateinit var showToast: (String) -> Unit
 
     fun loadLastPrinterParam() = viewModelScope.launch {
-        val addr = configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_ADDRESS.key)?.value
+        val addr = configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_ADDRESS)?.value
         if (addr != null) printerAddress = addr
 
         val paper =
-            configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_PAPER.key)?.value?.toIntOrNull()
+            configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_PAPER)?.value?.toIntOrNull()
         if (paper != null) paperSelection = paper.coerceIn(0, PaperSize.values().size - 1)
     }
 

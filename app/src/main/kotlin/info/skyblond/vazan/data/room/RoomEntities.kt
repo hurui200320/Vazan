@@ -38,7 +38,7 @@ data class Config(
     primaryKeys = ["label_id"],
     indices = [
         Index("label_id", unique = true),
-        Index("entry_id"),
+        Index("entity_id", unique = true),
         Index("label_status", "version"),
     ]
 )
@@ -46,7 +46,7 @@ data class Label(
     @ColumnInfo(name = "label_id") val labelId: String,
     @ColumnInfo(name = "label_status") val status: Status,
     @ColumnInfo(name = "version") val version: Long,
-    @ColumnInfo(name = "entry_id") val entryId: String?,
+    @ColumnInfo(name = "entity_id") val entityId: String?,
 ) : BencodeEncodable {
 
     enum class Status {
@@ -58,10 +58,10 @@ data class Label(
             val labelId = map["label_id"] as? String ?: return null
             val status = (map["label_status"] as? String)?.let { Status.valueOf(it) } ?: return null
             val version = map["version"] as? BigInteger ?: return null
-            val entryId = map["entry_id"] as? String
+            val entryId = map["entity_id"] as? String
             return Label(
                 labelId = labelId, status = status,
-                version = version.toLong(), entryId = entryId
+                version = version.toLong(), entityId = entryId
             )
         }
     }
@@ -71,7 +71,7 @@ data class Label(
             put("label_id") { BEntry.BString(labelId) }
             put("label_status") { BEntry.BString(status.name) }
             put("version") { BEntry.BInteger(version.toBigInteger()) }
-            entryId?.let { put("entry_id") { BEntry.BString(it) } }
+            entityId?.let { put("entity_id") { BEntry.BString(it) } }
         }
     )
 }

@@ -23,7 +23,7 @@ class MementoRepositoryRetrofitImpl @Inject constructor(
     private val tag = "MementoRepositoryRetrofitImpl"
 
     private suspend fun getToken(): String =
-        config.getConfigByKey(SettingsKey.MEMENTO_API_KEY.key)?.value ?: ""
+        config.getConfigByKey(SettingsKey.MEMENTO_API_KEY)?.value ?: ""
 
     override suspend fun listLibraries(): List<LibraryBrief> =
         service.listLibraries(getToken()).libraries.map { LibraryBrief.fromDto(it) }
@@ -53,9 +53,11 @@ class MementoRepositoryRetrofitImpl @Inject constructor(
                     )
                 } catch (e: IOException) {
                     Log.e(tag, "Error when fetching entries: $libraryId, $pageToken", e)
+                    delay(5000)
                     continue
                 } catch (e: HttpException) {
                     Log.e(tag, "Error when fetching entries: $libraryId, $pageToken", e)
+                    delay(5000)
                     continue
                 }
                 val t = System.currentTimeMillis()
@@ -64,8 +66,8 @@ class MementoRepositoryRetrofitImpl @Inject constructor(
                 val dt = System.currentTimeMillis() - t
                 // the api has rate limit of 30 request per minute
                 // thus wait 2s for each request
-                if (dt < 2000) {
-                    delay(2000 - dt)
+                if (dt < 3000) {
+                    delay(3000 - dt)
                 }
             } while (pageToken != null)
         }

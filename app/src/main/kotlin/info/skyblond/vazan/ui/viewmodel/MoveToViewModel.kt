@@ -69,8 +69,8 @@ class MoveToViewModel @Inject constructor(
         status = "Processing..."
         currentLabel = str
         val label = labelRepo.getLabelById(str)
-        if (label?.entryId != null) {
-            if (targetType != "box" || label.entryId != targetEntityId) {
+        if (label?.entityId != null) {
+            if (targetType != "box" || label.entityId != targetEntityId) {
                 val (libId, parentLocationField, parentBoxField) = configRepo.resolveConfig(
                     label.labelId.take(1)
                 )
@@ -78,7 +78,7 @@ class MoveToViewModel @Inject constructor(
                     try {
                         mementoRepository.updateEntryByLibraryIdAndEntryId(
                             libId,
-                            label.entryId,
+                            label.entityId,
                             getUpdateEntryDto(parentLocationField, parentBoxField)
                         )
                         delay(1500)

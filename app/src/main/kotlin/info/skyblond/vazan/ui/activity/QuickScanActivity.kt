@@ -24,7 +24,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -35,7 +34,6 @@ import info.skyblond.vazan.ui.intent
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.VazanTheme
 import info.skyblond.vazan.ui.viewmodel.QuickScanViewModel
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class QuickScanActivity : VazanActivity() {

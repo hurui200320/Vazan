@@ -14,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -24,7 +23,6 @@ import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.MaterialColors
 import info.skyblond.vazan.ui.theme.VazanTheme
 import info.skyblond.vazan.ui.viewmodel.MoveToViewModel
-import kotlinx.coroutines.launch
 import kotlin.concurrent.thread
 
 @AndroidEntryPoint

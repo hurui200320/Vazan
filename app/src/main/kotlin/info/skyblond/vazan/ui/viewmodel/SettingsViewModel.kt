@@ -14,8 +14,6 @@ import info.skyblond.vazan.domain.model.LibraryBrief
 import info.skyblond.vazan.domain.model.LibraryField
 import info.skyblond.vazan.domain.repository.ConfigRepository
 import info.skyblond.vazan.domain.repository.MementoRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -32,9 +30,9 @@ class SettingsViewModel @Inject constructor(
     lateinit var showToast: (String) -> Unit
 
     // each config has a persistent status, thus we can update them if someone changed it
-    private val configMap = ConcurrentHashMap<String, MutableState<String>>()
+    private val configMap = ConcurrentHashMap<SettingsKey, MutableState<String>>()
 
-    fun getConfigByKey(key: String): MutableState<String> {
+    fun getConfigByKey(key: SettingsKey): MutableState<String> {
         val state = configMap.getOrPut(key) { mutableStateOf("") }
         viewModelScope.launch {
             val v = configRepo.getConfigByKey(key)?.value ?: ""
@@ -43,10 +41,11 @@ class SettingsViewModel @Inject constructor(
         return state
     }
 
-    fun updateConfigByKey(key: String, newValue: String) = viewModelScope.launch {
-        val c = configRepo.getConfigByKey(key)?.copy(value = newValue) ?: Config(key, newValue)
+    fun updateConfigByKey(key: SettingsKey, newValue: String) = viewModelScope.launch {
+        val c = configRepo.getConfigByKey(key)?.copy(value = newValue) ?: Config(key.key, newValue)
         configRepo.insertOrUpdateConfig(c)
         getConfigByKey(key) // refresh ui
+        if (fieldsMap.containsKey(key)) fieldsMap.remove(key)
     }
 
     // Note: here we assume the api key is not changed. If changed, it still return the old libraries
@@ -83,7 +82,7 @@ class SettingsViewModel @Inject constructor(
         if (list.isNotEmpty()) return list
         viewModelScope.launch {
             try {
-                val libId = configRepo.getConfigByKey(settingsKey.key)?.value ?: ""
+                val libId = configRepo.getConfigByKey(settingsKey)?.value ?: ""
                 mementoRepository.getLibraryFields(libId).let {
                     list.clear()
                     list.addAll(it)

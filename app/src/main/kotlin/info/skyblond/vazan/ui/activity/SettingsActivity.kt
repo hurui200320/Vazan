@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.domain.SettingsKey
 import info.skyblond.vazan.ui.composable.ConfigSelectItem
@@ -29,7 +28,6 @@ import info.skyblond.vazan.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
@@ -39,34 +37,31 @@ class SettingsActivity : VazanActivity(), CoroutineScope {
 
     @Composable
     private fun TextConfig(settingKey: SettingsKey, action: () -> Unit = {}) {
-        val k = settingKey.key
         ConfigTextItem(
-            key = k,
-            valueProvider = { viewModel.getConfigByKey(k).value },
+            key = settingKey.key,
+            valueProvider = { viewModel.getConfigByKey(settingKey).value },
             validator = settingKey.validator,
-            onValueChange = { viewModel.updateConfigByKey(k, it); action() },
+            onValueChange = { viewModel.updateConfigByKey(settingKey, it); action() },
             singleLine = settingKey.singleLine
         )
     }
 
     @Composable
     private fun MementoLibraryConfig(settingKey: SettingsKey, action: () -> Unit = {}) {
-        val k = settingKey.key
         ConfigSelectItem(
-            key = k, valueProvider = { viewModel.getConfigByKey(k).value },
+            key = settingKey.key, valueProvider = { viewModel.getConfigByKey(settingKey).value },
             items = { viewModel.getLibraryList() },
-            onValueChange = { viewModel.updateConfigByKey(k, it.id); action() },
+            onValueChange = { viewModel.updateConfigByKey(settingKey, it.id); action() },
             itemToString = { it.name + "(${it.owner})" }
         )
     }
 
     @Composable
     private fun MementoFieldsConfig(settingKey: SettingsKey, lib: SettingsKey) {
-        val k = settingKey.key
         ConfigSelectItem(
-            key = k, valueProvider = { viewModel.getConfigByKey(k).value },
+            key = settingKey.key, valueProvider = { viewModel.getConfigByKey(settingKey).value },
             items = { viewModel.getLibraryFields(lib) },
-            onValueChange = { viewModel.updateConfigByKey(k, it.id.toString()) },
+            onValueChange = { viewModel.updateConfigByKey(settingKey, it.id.toString()) },
             itemToString = { it.name + "(${it.type})" }
         )
     }

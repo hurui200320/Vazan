@@ -61,7 +61,7 @@ class GenerateLabelViewModel @Inject constructor(
                     labelId = str,
                     status = Label.Status.PRINTED,
                     version = 0,
-                    entryId = null
+                    entityId = null
                 )
             )
         }

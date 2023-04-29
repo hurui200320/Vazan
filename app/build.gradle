@@ -14,8 +14,8 @@ android {
         applicationId "info.skyblond.vazan"
         minSdk 28
         targetSdk 33
-        versionCode 3
-        versionName "2.0.2"
+        versionCode 4
+        versionName "2.0.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -54,7 +54,6 @@ dependencies {
     implementation 'com.google.zxing:core:3.5.1'
     // bencode
     implementation 'info.skyblond:bencodekt:v1.1.0'
-
     // scan barcode, no need for camera permission
     implementation "com.google.android.gms:play-services-code-scanner:16.0.0"
 
@@ -69,13 +68,6 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
     implementation "com.squareup.moshi:moshi:1.14.0"
     implementation "com.squareup.moshi:moshi-kotlin:1.14.0"
-
-    // paging
-    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
-    implementation "androidx.paging:paging-compose:1.0.0-alpha18"
-
-    // compiler asked this
-    implementation "androidx.fragment:fragment-ktx:1.5.7"
 
     // dagger and hilt for di
     implementation "com.google.dagger:hilt-android:2.45"
@@ -104,4 +96,8 @@ dependencies {
 // Allow references to generated code
 kapt {
     correctErrorTypes true
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas".toString())
 }

@@ -1,7 +1,10 @@
 package info.skyblond.vazan.data.room
 
+import androidx.room.AutoMigration
 import androidx.room.Database
+import androidx.room.RenameColumn
 import androidx.room.RoomDatabase
+import androidx.room.migration.AutoMigrationSpec
 import info.skyblond.bencode.BEntry
 import info.skyblond.bencode.BEntryType
 import info.skyblond.bencode.decoder.BencodeDecoder
@@ -14,9 +17,15 @@ import java.io.Writer
     entities = [
         Config::class, Label::class
     ],
-    version = 2
+    version = 3,
+    autoMigrations = [
+        AutoMigration(from = 2, to = 3, spec = AppDatabase.From2To3AutoMigration::class)
+    ]
 )
 abstract class AppDatabase : RoomDatabase() {
+    @RenameColumn("labels", "entry_id", "entity_id")
+    class From2To3AutoMigration : AutoMigrationSpec
+
     abstract val configDao: ConfigDao
     abstract val labelDao: LabelDao
 
@@ -96,6 +105,7 @@ abstract class AppDatabase : RoomDatabase() {
                     }
                     decoder.endEntity()
                 }
+
                 else -> error("Unknown type: $type")
             }
         }

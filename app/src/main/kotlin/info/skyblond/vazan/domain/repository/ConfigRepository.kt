@@ -5,14 +5,14 @@ import info.skyblond.vazan.domain.LabelEncoding.LabelType
 import info.skyblond.vazan.domain.SettingsKey
 
 interface ConfigRepository {
-    suspend fun getConfigByKey(key: String): Config?
+    suspend fun getConfigByKey(settingsKey: SettingsKey): Config?
 
     suspend fun insertOrUpdateConfig(config: Config)
 
     suspend fun deleteConfig(config: Config)
 
     private suspend fun getConfigOrBlank(settingsKey: SettingsKey): String =
-        getConfigByKey(settingsKey.key)?.value ?: ""
+        getConfigByKey(settingsKey)?.value ?: ""
 
     /**
      * Get the item library id (box or item), and the parent location and box fields.

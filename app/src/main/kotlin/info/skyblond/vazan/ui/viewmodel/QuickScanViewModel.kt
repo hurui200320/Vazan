@@ -13,8 +13,6 @@ import info.skyblond.vazan.domain.SettingsKey
 import info.skyblond.vazan.domain.repository.ConfigRepository
 import info.skyblond.vazan.domain.repository.LabelRepository
 import info.skyblond.vazan.domain.repository.MementoRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,13 +32,13 @@ class QuickScanViewModel @Inject constructor(
         if (locationList.isNotEmpty()) return
         viewModelScope.launch {
             val libId =
-                configRepo.getConfigByKey(SettingsKey.MEMENTO_LOCATION_LIBRARY_ID.key)?.value
+                configRepo.getConfigByKey(SettingsKey.MEMENTO_LOCATION_LIBRARY_ID)?.value
                     ?: kotlin.run {
                         showToast("Library ID not found, please check your settings")
                         return@launch
                     }
             val fieldId =
-                configRepo.getConfigByKey(SettingsKey.MEMENTO_LOCATION_FIELD_ID.key)?.value?.toIntOrNull()
+                configRepo.getConfigByKey(SettingsKey.MEMENTO_LOCATION_FIELD_ID)?.value?.toIntOrNull()
                     ?: kotlin.run {
                         showToast("Field ID not found, please check your settings")
                         return@launch
@@ -63,7 +61,7 @@ class QuickScanViewModel @Inject constructor(
         val label = labelRepo.getLabelById(str) ?: kotlin.run {
             showToast("Label not found, please re-sync database"); return@launch
         }
-        val entryId = label.entryId ?: kotlin.run {
+        val entryId = label.entityId ?: kotlin.run {
             showToast("Entry not found, please re-sync database"); return@launch
         }
         showToast("Moving to box ${label.labelId}(${entryId})")
