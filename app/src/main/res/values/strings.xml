@@ -7,4 +7,5 @@
     <string name="title_activity_sync">SyncActivity</string>
     <string name="title_activity_generate_label">GenerateLabelActivity</string>
     <string name="title_activity_printer">PrinterActivity</string>
+    <string name="title_activity_scanner">ScannerActivity</string>
 </resources>

@@ -14,9 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.ui.composable.OneLineText
 import info.skyblond.vazan.ui.showToast
@@ -32,20 +29,10 @@ class MoveToActivity : VazanActivity() {
     override val permissionExplanation: Map<String, String> = emptyMap()
 
     private fun startScan() {
-        viewModel.scanner.startScan()
-            .addOnSuccessListener { barcode ->
-                barcode.rawValue?.also {
-                    viewModel.processLabel(it) { thread { startScan() } }
-                } ?: showToast("Invalid barcode")
-            }
-            .addOnCanceledListener {
-                showToast("Scan canceled")
-                finish()
-            }
-            .addOnFailureListener { e ->
-                showToast("Scan failed: ${e.message}")
-                finish()
-            }
+        scanBarcode(
+            onSuccess = { viewModel.processLabel(it) { thread { startScan() } } },
+            onFailed = { showToast("Scan cancelled/failed"); finish() }
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,13 +53,6 @@ class MoveToActivity : VazanActivity() {
                 return
             }
         }
-        viewModel.scanner = GmsBarcodeScanning.getClient(
-            this, GmsBarcodeScannerOptions.Builder()
-                .setBarcodeFormats(
-                    Barcode.FORMAT_DATA_MATRIX,
-                    Barcode.FORMAT_CODE_128
-                ).build()
-        )
         thread { startScan() }
         setContent {
             VazanTheme {

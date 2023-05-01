@@ -11,4 +11,3 @@ fun Context.startActivity(clazz: KClass<*>): Unit = this.startActivity(intent(cl
 
 fun Context.showToast(content: String, duration: Int = Toast.LENGTH_LONG): Unit =
     Toast.makeText(this, content, duration).show()
-

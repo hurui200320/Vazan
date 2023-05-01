@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import dagger.hilt.android.lifecycle.HiltViewModel
 import info.skyblond.vazan.data.retrofit.EntryDto
 import info.skyblond.vazan.data.retrofit.UpdateEntryDto
@@ -31,8 +30,6 @@ class MoveToViewModel @Inject constructor(
     var targetName by mutableStateOf("")
     var targetType by mutableStateOf("")
     var currentLabel by mutableStateOf("")
-
-    lateinit var scanner: GmsBarcodeScanner
 
     private val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME)
 

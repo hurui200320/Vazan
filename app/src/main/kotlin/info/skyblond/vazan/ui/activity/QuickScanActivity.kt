@@ -24,9 +24,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogProperties
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.ui.composable.GridMenu
 import info.skyblond.vazan.ui.composable.MenuItem
@@ -54,13 +51,6 @@ class QuickScanActivity : VazanActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.showToast = { showToast(it) }
-        viewModel.scanner = GmsBarcodeScanning.getClient(
-            this, GmsBarcodeScannerOptions.Builder()
-                .setBarcodeFormats(
-                    Barcode.FORMAT_DATA_MATRIX,
-                    Barcode.FORMAT_CODE_128
-                ).build()
-        )
         setContent {
             VazanTheme {
                 // A surface container using the 'background' color from the theme
@@ -75,16 +65,14 @@ class QuickScanActivity : VazanActivity() {
                                 viewModel.showSelectLocationDialog = true
                             },
                             MenuItem(icon = Icons.Outlined.Inventory2, action = "Move to Box") {
-                                viewModel.scanner.startScan()
-                                    .addOnSuccessListener { barcode ->
-                                        barcode.rawValue?.also {
-                                            viewModel.processMoveToBox(it) { entityId ->
-                                                startActivity(entityId, it, "box")
-                                            }
-                                        } ?: showToast("Invalid barcode")
-                                    }
-                                    .addOnCanceledListener { showToast("Scan canceled") }
-                                    .addOnFailureListener { e -> showToast("Scan failed: ${e.message}") }
+                                scanBarcode(
+                                    onSuccess = {
+                                        viewModel.processMoveToBox(it) { entityId ->
+                                            startActivity(entityId, it, "box")
+                                        }
+                                    },
+                                    onFailed = { showToast("Scan cancelled/failed") }
+                                )
                             }
                         )
                     )

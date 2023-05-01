@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import dagger.hilt.android.lifecycle.HiltViewModel
 import info.skyblond.vazan.domain.LabelEncoding
 import info.skyblond.vazan.domain.SettingsKey
@@ -23,7 +22,6 @@ class QuickScanViewModel @Inject constructor(
     private val mementoRepository: MementoRepository
 ) : ViewModel() {
     lateinit var showToast: (String) -> Unit
-    lateinit var scanner: GmsBarcodeScanner
 
     val locationList = mutableStateListOf<Pair<String, String>>()
     var showSelectLocationDialog by mutableStateOf(false)

@@ -32,9 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.data.room.Label
 import info.skyblond.vazan.domain.LabelEncoding
@@ -89,7 +86,7 @@ class GenerateLabelActivity : VazanActivity() {
                         Spacer(modifier = Modifier.fillMaxHeight(0.01f))
                         Text(
                             text = "Status: ${viewModel.labelStatus}",
-                            color = when(viewModel.labelStatus) {
+                            color = when (viewModel.labelStatus) {
                                 Label.Status.IN_USE.name -> MaterialColors.Red600
                                 Label.Status.PRINTED.name -> MaterialColors.Orange600
                                 "NEW" -> MaterialColors.Green600
@@ -106,23 +103,12 @@ class GenerateLabelActivity : VazanActivity() {
 
                             Button(
                                 onClick = {
-                                    val scanner = GmsBarcodeScanning.getClient(
-                                        this@GenerateLabelActivity,
-                                        GmsBarcodeScannerOptions.Builder()
-                                            .setBarcodeFormats(
-                                                Barcode.FORMAT_DATA_MATRIX,
-                                                Barcode.FORMAT_CODE_128
-                                            ).build()
+                                    scanBarcode(
+                                        onSuccess = {
+                                            if (!viewModel.setLabel(it)) showToast("Invalid label")
+                                        },
+                                        onFailed = { showToast("Scan cancelled/failed") }
                                     )
-                                    scanner.startScan()
-                                        .addOnSuccessListener { barcode ->
-                                            barcode.rawValue?.also {
-                                                if (!viewModel.setLabel(it)) showToast("Invalid label")
-                                            } ?: showToast("Invalid barcode")
-                                        }
-                                        .addOnFailureListener { e ->
-                                            showToast("Scan failed: ${e.message}")
-                                        }
                                 }
                             ) {
                                 Text(text = "Scan")

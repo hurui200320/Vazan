@@ -7,6 +7,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import dagger.hilt.android.AndroidEntryPoint
+import info.skyblond.vazan.scanner.ScannerActivity
+import info.skyblond.vazan.ui.intent
+import java.util.concurrent.ConcurrentLinkedQueue
 
 @AndroidEntryPoint
 abstract class VazanActivity : ComponentActivity() {
@@ -47,4 +50,21 @@ abstract class VazanActivity : ComponentActivity() {
         if (array.isNotEmpty())
             requestPermissionLauncher.launch(array)
     }
+
+    private val scannerCallbackQueue = ConcurrentLinkedQueue<Pair<(String) -> Unit, () -> Unit>>()
+
+    private val scannerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val (onSuccess, onFailed) = scannerCallbackQueue.poll() ?: error("Missing callback")
+            val barcode = it.data?.getStringExtra("barcode")
+            if (it.resultCode == RESULT_OK && barcode != null)
+                onSuccess(barcode)
+            else onFailed()
+        }
+
+    protected fun scanBarcode(onSuccess: (String) -> Unit, onFailed: () -> Unit) =
+        synchronized(scannerCallbackQueue) {
+            scannerCallbackQueue.offer(onSuccess to onFailed)
+            scannerLauncher.launch(intent(ScannerActivity::class))
+        }
 }

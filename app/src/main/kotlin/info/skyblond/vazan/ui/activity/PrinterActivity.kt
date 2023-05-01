@@ -51,6 +51,7 @@ class PrinterActivity : VazanActivity() {
         put(Manifest.permission.BLUETOOTH, "communicating with printer")
         put(Manifest.permission.BLUETOOTH_ADMIN, "enabling bluetooth automatically")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            put(Manifest.permission.BLUETOOTH_SCAN, "communicating with printer")
             put(Manifest.permission.BLUETOOTH_CONNECT, "communicating with printer")
         }
     }
