@@ -1,4 +1,4 @@
-package info.skyblond.vazan.scanner
+package info.skyblond.vazan.ui.activity
 
 import android.Manifest
 import android.content.Intent
@@ -35,7 +35,6 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import dagger.hilt.android.AndroidEntryPoint
-import info.skyblond.vazan.ui.activity.VazanActivity
 import info.skyblond.vazan.ui.theme.VazanTheme
 
 @AndroidEntryPoint

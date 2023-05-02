@@ -7,6 +7,7 @@ enum class SettingsKey(
 ) {
     APP_LAST_PRINTER_ADDRESS("app.thermal_printer.last_address", true, { it.isNotBlank() }),
     APP_LAST_PRINTER_PAPER("app.thermal_printer.last_paper", true, { it.toIntOrNull() != null }),
+    APP_LAST_PRINTER_REPEAT("app.thermal_printer.last_repeat", true, { it.toIntOrNull() != null }),
 
     MEMENTO_API_KEY("memento.api_key", true, { it.isNotBlank() }),
 

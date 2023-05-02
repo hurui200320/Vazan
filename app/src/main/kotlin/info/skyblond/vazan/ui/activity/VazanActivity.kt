@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import dagger.hilt.android.AndroidEntryPoint
-import info.skyblond.vazan.scanner.ScannerActivity
 import info.skyblond.vazan.ui.intent
 import java.util.concurrent.ConcurrentLinkedQueue
 

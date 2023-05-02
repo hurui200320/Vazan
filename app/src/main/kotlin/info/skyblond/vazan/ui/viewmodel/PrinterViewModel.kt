@@ -42,6 +42,10 @@ class PrinterViewModel @Inject constructor(
         val paper =
             configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_PAPER)?.value?.toIntOrNull()
         if (paper != null) paperSelection = paper.coerceIn(0, PaperSize.values().size - 1)
+
+        val lastRepeat =
+            configRepo.getConfigByKey(SettingsKey.APP_LAST_PRINTER_REPEAT)?.value?.toIntOrNull()
+        if (lastRepeat != null) repeat = lastRepeat.coerceIn(0, Int.MAX_VALUE)
     }
 
     fun getPaperSize() = PaperSize.values()[paperSelection]
@@ -90,6 +94,12 @@ class PrinterViewModel @Inject constructor(
                                 Config(
                                     SettingsKey.APP_LAST_PRINTER_PAPER.key,
                                     paperSelection.toString()
+                                )
+                            )
+                            configRepo.insertOrUpdateConfig(
+                                Config(
+                                    SettingsKey.APP_LAST_PRINTER_REPEAT.key,
+                                    repeat.toString()
                                 )
                             )
                             onSuccess()
