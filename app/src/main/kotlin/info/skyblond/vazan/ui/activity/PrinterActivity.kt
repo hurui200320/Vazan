@@ -184,6 +184,7 @@ class PrinterActivity : VazanActivity() {
                                     setResult(RESULT_OK, Intent().apply {
                                         putExtra("label", viewModel.label)
                                     })
+                                    finish()
                                 }
                             },
                             enabled = viewModel.printerAddress.length == 17 && !viewModel.printing
