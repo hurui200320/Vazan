@@ -2,6 +2,8 @@ package info.skyblond.vazan.data.room
 
 import androidx.room.AutoMigration
 import androidx.room.Database
+import androidx.room.DeleteColumn
+import androidx.room.DeleteTable
 import androidx.room.RenameColumn
 import androidx.room.RoomDatabase
 import androidx.room.migration.AutoMigrationSpec
@@ -14,17 +16,19 @@ import java.io.Reader
 import java.io.Writer
 
 @Database(
-    entities = [
-        Config::class, Label::class
-    ],
-    version = 3,
+    entities = [Config::class, Label::class], // TODO: remove Label
+    version = 3, // TODO: 4
     autoMigrations = [
-        AutoMigration(from = 2, to = 3, spec = AppDatabase.From2To3AutoMigration::class)
+        AutoMigration(from = 2, to = 3, spec = AppDatabase.From2To3AutoMigration::class),
+//        AutoMigration(from = 3, to = 4, spec = AppDatabase.From3To4AutoMigration::class),
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
     @RenameColumn("labels", "entry_id", "entity_id")
     class From2To3AutoMigration : AutoMigrationSpec
+
+    @DeleteTable("labels")
+    class From3To4AutoMigration : AutoMigrationSpec
 
     abstract val configDao: ConfigDao
     abstract val labelDao: LabelDao
@@ -35,8 +39,6 @@ abstract class AppDatabase : RoomDatabase() {
             mapOf(
                 "configs" to BEntry.BList(
                     configDao.listConfigs().asSequence().map { it.encodeToBEntry() }),
-                "labels" to BEntry.BList(
-                    labelDao.listLabels().asSequence().map { it.encodeToBEntry() })
             )
         )
         bencodeWriter.flush()
@@ -93,15 +95,6 @@ abstract class AppDatabase : RoomDatabase() {
                     while (decoder.nextType() != BEntryType.EntityEnd) {
                         val map = Config.fromMap(readMap(decoder))
                         map?.let { configDao.insertOrUpdateConfig(it) }
-                    }
-                    decoder.endEntity()
-                }
-
-                "labels" -> {
-                    decoder.startList()
-                    while (decoder.nextType() != BEntryType.EntityEnd) {
-                        val map = Label.fromMap(readMap(decoder))
-                        map?.let { labelDao.insertOrUpdateLabel(it) }
                     }
                     decoder.endEntity()
                 }
