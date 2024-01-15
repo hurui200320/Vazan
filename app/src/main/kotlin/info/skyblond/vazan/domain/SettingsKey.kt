@@ -32,6 +32,13 @@ enum class SettingsKey(
         "memento.item.parent_box.field_id", true, { it.toIntOrNull() != null }),
 
     // sync
-    MEMENTO_SYNC_VERSION("memento.sync.last_version", true, { it.toIntOrNull() != null }),
+    MEMENTO_SYNC_VERSION("memento.sync.last_version", true, { it.toIntOrNull() != null });
 
+
+    init {
+        // make sure settings key are not duplicated
+        require(
+            SettingsKey.entries.size == SettingsKey.entries.map { it.key }.distinct().size
+        ) { "Duplicated config key detected" }
+    }
 }

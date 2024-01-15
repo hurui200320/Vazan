@@ -40,13 +40,17 @@ class MainActivity : VazanActivity() {
                                 icon = Icons.Outlined.Sync,
                                 action = "Sync"
                             ) { startActivity(SyncActivity::class) },
+                            // Browse -> tree view -> Entry details -> Browse
+                            // Search -> keywords -> list -> Entry details
+                            // Create entry -> Entry details
+                            // Entry details -> Browse children, entry UD, meta CRUD
                             MenuItem(
                                 icon = Icons.Outlined.Print,
                                 action = "Print"
                             ) { startActivity(GenerateLabelActivity::class) },
                             MenuItem(
                                 icon = Icons.Outlined.QrCodeScanner,
-                                action = "Quick scan",
+                                action = "Quick scan", // TODO add, move
                             ) { startActivity(QuickScanActivity::class) },
                             MenuItem(
                                 icon = Icons.Outlined.Backup,

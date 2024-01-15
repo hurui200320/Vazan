@@ -47,7 +47,7 @@ import info.skyblond.vazan.ui.viewmodel.PrinterViewModel
 class PrinterActivity : VazanActivity() {
     private val viewModel: PrinterViewModel by viewModels()
 
-    override val permissionExplanation: Map<String, String> = mutableMapOf<String, String>().apply {
+    override val permissionExplanation: Map<String, String> = buildMap {
         put(Manifest.permission.BLUETOOTH, "communicating with printer")
         put(Manifest.permission.BLUETOOTH_ADMIN, "enabling bluetooth automatically")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -139,7 +139,7 @@ class PrinterActivity : VazanActivity() {
                                         .Builder(this@PrinterActivity)
                                         .setTitle("Select paper size")
                                         .setSingleChoiceItems(
-                                            PaperSize.values()
+                                            PaperSize.entries
                                                 .map { "${it.displayName}, gap ${it.gap} mm" }
                                                 .toTypedArray(), viewModel.paperSelection
                                         ) { dialog: DialogInterface, choice: Int ->
