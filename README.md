@@ -1,22 +1,23 @@
 # Vazan
 
-**_Note: This branch is V2, a completely rewrite. For the v1, see branch `old-archive`._**
+**_Note: This branch is V3, a half rewrite.
+For V2, see `memento-archive`.
+For the v1, see branch `old-archive`._**
 
-This is a supplementary app for [Memento Database](https://mementodatabase.com/) that fit my own needs
-(for personal inventory management).
+This is a supplementary app for [jim-cli](https://github.com/hurui200320/jim-cli) that fit my own needs
+for personal inventory management.
 
-Also, this is my (officially) first android app. I tried to develop android app multiple times before,
-but those eventually ended up into trash bins, so they don't count.
+## Why rewrite again?
 
-## Why I need this?
+Considering I'm still unemployed, which means I have no incoming but still need to spend money to survive,
+as a action to reduce my daily spending (thus to increase the chance I live), I rolled out the memento
+database which charges 80USD per year instead 60USD after adding in their AI thing, which I have no use for.
 
-Several times a year, I need to pack all my stuff and move. After moving to a new place, I don't
-unpack all things immediately. When I need to find exactly one specific object, it would be a
-nightmare to go through all boxes: unpack, dump out all things, not found the thing, repack the mess.
+Thus I wrote [jim-cli](https://github.com/hurui200320/jim-cli), a cli-based inventory management program.
+The cli interface is good enough for most times, but I still need a way to print barcode and work without
+laptop in reach, so I designed a HTTP interface and adopted this app from memento database to jim.
 
-One day I was picking up a package, I saw the waybill on the box. I thought, why don't I print
-something and stick it to the box, so I can find out what inside without actually open it? So I
-wrote this app.
+# WIP, TODO: below
 
 ## What it does?
 
