@@ -8,10 +8,15 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import info.skyblond.vazan.data.retrofit.JimService
 import info.skyblond.vazan.data.retrofit.MementoService
 import info.skyblond.vazan.data.room.AppDatabase
 import info.skyblond.vazan.data.room.ConfigDao
 import info.skyblond.vazan.data.room.LabelDao
+import info.skyblond.vazan.domain.interceptor.JimEncryptionInterceptor
+import info.skyblond.vazan.domain.interceptor.JimHostSelectionInterceptor
+import info.skyblond.vazan.domain.repository.ConfigRepository
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.create
@@ -46,4 +51,18 @@ object AppModule {
         .baseUrl("https://api.mementodatabase.com/")
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build().create()
+
+    @Provides
+    @Singleton
+    fun provideJimService(moshi: Moshi, configRepository: ConfigRepository): JimService =
+        Retrofit.Builder()
+            .baseUrl("http://example.com/")
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .client(
+                OkHttpClient.Builder()
+                    .addInterceptor(JimHostSelectionInterceptor(configRepository))
+                    .addInterceptor(JimEncryptionInterceptor(configRepository))
+                    .build()
+            )
+            .build().create()
 }

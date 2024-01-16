@@ -17,7 +17,6 @@ enum class SettingsKey(
 
     // box
     MEMENTO_BOX_LIBRARY_ID("memento.box.library_id", true, { it.isNotBlank() }),
-    MEMENTO_BOX_FIELD_ID("memento.box.field_id", true, { it.toIntOrNull() != null }),
     MEMENTO_BOX_PARENT_LOCATION_FIELD_ID(
         "memento.box.parent_location.field_id", true, { it.toIntOrNull() != null }),
     MEMENTO_BOX_PARENT_BOX_FIELD_ID(
@@ -25,20 +24,14 @@ enum class SettingsKey(
 
     // item
     MEMENTO_ITEM_LIBRARY_ID("memento.item.library_id", true, { it.isNotBlank() }),
-    MEMENTO_ITEM_FIELD_ID("memento.item.field_id", true, { it.toIntOrNull() != null }),
     MEMENTO_ITEM_PARENT_LOCATION_FIELD_ID(
         "memento.item.parent_location.field_id", true, { it.toIntOrNull() != null }),
     MEMENTO_ITEM_PARENT_BOX_FIELD_ID(
         "memento.item.parent_box.field_id", true, { it.toIntOrNull() != null }),
 
-    // sync
-    MEMENTO_SYNC_VERSION("memento.sync.last_version", true, { it.toIntOrNull() != null });
 
 
-    init {
-        // make sure settings key are not duplicated
-        require(
-            SettingsKey.entries.size == SettingsKey.entries.map { it.key }.distinct().size
-        ) { "Duplicated config key detected" }
-    }
+    // jim host
+    JIM_HOST("jim.basic.host", true, { it.isNotBlank() }),
+    JIM_API_PASSWORD("jim.basic.password", true, { it.isNotBlank() }),
 }

@@ -13,9 +13,8 @@ android {
     defaultConfig {
         applicationId "info.skyblond.vazan"
         minSdk 28
-        // before all my devices are upgraded, I'd stick with this old target sdk
-        //noinspection ExpiredTargetSdkVersion
-        targetSdk 29
+        //noinspection OldTargetApi
+        targetSdk 33
         versionCode 7
         versionName "2.0.6"
 

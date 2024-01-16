@@ -27,6 +27,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Vazan"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
         <activity
@@ -35,14 +36,14 @@
             android:label="@string/title_activity_scanner"
             android:theme="@style/Theme.Vazan" />
         <activity
-            android:name=".ui.activity.SyncActivity"
+            android:name=".ui.activity.BrowseActivity"
             android:exported="false"
-            android:label="@string/title_activity_sync"
+            android:label="@string/title_activity_browse"
             android:theme="@style/Theme.Vazan" />
         <activity
-            android:name=".ui.activity.GenerateLabelActivity"
+            android:name=".ui.activity.PreparePrintActivity"
             android:exported="false"
-            android:label="@string/title_activity_generate_label"
+            android:label="@string/title_activity_prepare_print"
             android:theme="@style/Theme.Vazan" />
         <activity
             android:name=".ui.activity.PrinterActivity"

@@ -39,11 +39,11 @@ import info.skyblond.vazan.ui.intent
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.MaterialColors
 import info.skyblond.vazan.ui.theme.VazanTheme
-import info.skyblond.vazan.ui.viewmodel.GenerateLabelViewModel
+import info.skyblond.vazan.ui.viewmodel.PreparePrintActivity
 
 @AndroidEntryPoint
-class GenerateLabelActivity : VazanActivity() {
-    private val viewModel: GenerateLabelViewModel by viewModels()
+class PreparePrintActivity : VazanActivity() {
+    private val viewModel: PreparePrintActivity by viewModels()
 
     override val permissionExplanation: Map<String, String> = emptyMap()
 

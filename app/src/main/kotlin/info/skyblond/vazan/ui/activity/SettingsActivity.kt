@@ -19,19 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.domain.SettingsKey
-import info.skyblond.vazan.ui.composable.ConfigSelectItem
 import info.skyblond.vazan.ui.composable.ConfigTextItem
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.startActivity
 import info.skyblond.vazan.ui.theme.VazanTheme
 import info.skyblond.vazan.ui.viewmodel.SettingsViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
 
 @AndroidEntryPoint
-class SettingsActivity : VazanActivity(), CoroutineScope {
+class SettingsActivity : VazanActivity() {
     override val permissionExplanation: Map<String, String> = emptyMap()
     private val viewModel: SettingsViewModel by viewModels()
 
@@ -46,30 +41,9 @@ class SettingsActivity : VazanActivity(), CoroutineScope {
         )
     }
 
-    @Composable
-    private fun MementoLibraryConfig(settingKey: SettingsKey, action: () -> Unit = {}) {
-        ConfigSelectItem(
-            key = settingKey.key, valueProvider = { viewModel.getConfigByKey(settingKey).value },
-            items = { viewModel.getLibraryList() },
-            onValueChange = { viewModel.updateConfigByKey(settingKey, it.id); action() },
-            itemToString = { it.name + "(${it.owner})" }
-        )
-    }
-
-    @Composable
-    private fun MementoFieldsConfig(settingKey: SettingsKey, lib: SettingsKey) {
-        ConfigSelectItem(
-            key = settingKey.key, valueProvider = { viewModel.getConfigByKey(settingKey).value },
-            items = { viewModel.getLibraryFields(lib) },
-            onValueChange = { viewModel.updateConfigByKey(settingKey, it.id.toString()) },
-            itemToString = { it.name + "(${it.type})" }
-        )
-    }
-
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.showToast = { showToast(it) }
         setContent {
             VazanTheme {
                 Scaffold(
@@ -87,79 +61,31 @@ class SettingsActivity : VazanActivity(), CoroutineScope {
                         )
                     },
                 ) { scaffoldPadding ->
-                    Surface(
-                        modifier = Modifier
-                            .padding(scaffoldPadding)
-                    ) {
+                    Surface(modifier = Modifier.padding(scaffoldPadding)) {
                         LazyColumn {
-                            // api
+                            // jim api
                             item {
-                                TextConfig(settingKey = SettingsKey.MEMENTO_API_KEY) {
-                                    showToast("Restarting to apply new API key...")
+                                TextConfig(settingKey = SettingsKey.JIM_HOST) {
+                                    showToast("Restarting to apply new host...")
+                                    finish()
+                                    startActivity(SettingsActivity::class)
+                                }
+                            }
+                            item {
+                                TextConfig(settingKey = SettingsKey.JIM_API_PASSWORD) {
+                                    showToast("Restarting to apply new host...")
                                     finish()
                                     startActivity(SettingsActivity::class)
                                 }
                             }
                             item { Divider() }
-                            // location
-                            item { MementoLibraryConfig(settingKey = SettingsKey.MEMENTO_LOCATION_LIBRARY_ID) }
-                            item {
-                                MementoFieldsConfig(
-                                    settingKey = SettingsKey.MEMENTO_LOCATION_FIELD_ID,
-                                    lib = SettingsKey.MEMENTO_LOCATION_LIBRARY_ID
-                                )
-                            }
-                            item { Divider() }
-                            // box
-                            item { MementoLibraryConfig(settingKey = SettingsKey.MEMENTO_BOX_LIBRARY_ID) }
-                            item {
-                                MementoFieldsConfig(
-                                    settingKey = SettingsKey.MEMENTO_BOX_FIELD_ID,
-                                    lib = SettingsKey.MEMENTO_BOX_LIBRARY_ID
-                                )
-                            }
-                            item {
-                                MementoFieldsConfig(
-                                    settingKey = SettingsKey.MEMENTO_BOX_PARENT_LOCATION_FIELD_ID,
-                                    lib = SettingsKey.MEMENTO_BOX_LIBRARY_ID
-                                )
-                            }
-                            item {
-                                MementoFieldsConfig(
-                                    settingKey = SettingsKey.MEMENTO_BOX_PARENT_BOX_FIELD_ID,
-                                    lib = SettingsKey.MEMENTO_BOX_LIBRARY_ID
-                                )
-                            }
-                            item { Divider() }
-                            // item
-                            item { MementoLibraryConfig(settingKey = SettingsKey.MEMENTO_ITEM_LIBRARY_ID) }
-                            item {
-                                MementoFieldsConfig(
-                                    settingKey = SettingsKey.MEMENTO_ITEM_FIELD_ID,
-                                    lib = SettingsKey.MEMENTO_ITEM_LIBRARY_ID
-                                )
-                            }
-                            item {
-                                MementoFieldsConfig(
-                                    settingKey = SettingsKey.MEMENTO_ITEM_PARENT_LOCATION_FIELD_ID,
-                                    lib = SettingsKey.MEMENTO_ITEM_LIBRARY_ID
-                                )
-                            }
-                            item {
-                                MementoFieldsConfig(
-                                    settingKey = SettingsKey.MEMENTO_ITEM_PARENT_BOX_FIELD_ID,
-                                    lib = SettingsKey.MEMENTO_ITEM_LIBRARY_ID
-                                )
-                            }
-                            item { Divider() }
-                            item { TextConfig(settingKey = SettingsKey.MEMENTO_SYNC_VERSION) }
+                            item { TextConfig(settingKey = SettingsKey.APP_LAST_PRINTER_ADDRESS) }
+                            item { TextConfig(settingKey = SettingsKey.APP_LAST_PRINTER_PAPER) }
+                            item { TextConfig(settingKey = SettingsKey.APP_LAST_PRINTER_REPEAT) }
                         }
                     }
                 }
             }
         }
     }
-
-    private val job = Job() + Dispatchers.Main
-    override val coroutineContext: CoroutineContext = job
 }

@@ -3,15 +3,18 @@ package info.skyblond.vazan.ui.activity
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.EventNote
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.ui.composable.GridMenu
@@ -37,29 +40,29 @@ class MainActivity : VazanActivity() {
                     GridMenu(
                         menuItems = listOf(
                             MenuItem(
-                                icon = Icons.Outlined.Sync,
-                                action = "Sync"
-                            ) { startActivity(SyncActivity::class) },
-                            // Browse -> tree view -> Entry details -> Browse
-                            // Search -> keywords -> list -> Entry details
-                            // Create entry -> Entry details
-                            // Entry details -> Browse children, entry UD, meta CRUD
+                                icon = Icons.Outlined.EventNote,
+                                action = "Browse"
+                            ) { startActivity(BrowseActivity::class) },
+                            // TODO: Search -> keywords -> list -> Entry details
+                            // TODO: View ->Entry details -> Browse children, entry UD, meta CRUD, print label...
                             MenuItem(
                                 icon = Icons.Outlined.Print,
                                 action = "Print"
-                            ) { startActivity(GenerateLabelActivity::class) },
+                            ) { startActivity(PreparePrintActivity::class) },
                             MenuItem(
                                 icon = Icons.Outlined.QrCodeScanner,
                                 action = "Quick scan", // TODO add, move
                             ) { startActivity(QuickScanActivity::class) },
-                            MenuItem(
-                                icon = Icons.Outlined.Backup,
-                                action = "Backup",
-                            ) { startActivity(BackupActivity::class) },
+                            // TODO: Done
                             MenuItem(
                                 icon = Icons.Outlined.Settings,
                                 action = "Settings",
                             ) { startActivity(SettingsActivity::class) },
+                            MenuItem(
+                                icon = Icons.Outlined.Backup,
+                                action = "Backup",
+                            ) { startActivity(BackupActivity::class) },
+
                         )
                     )
                 }
