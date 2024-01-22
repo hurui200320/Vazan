@@ -61,6 +61,11 @@
             android:label="@string/title_activity_move_to"
             android:theme="@style/Theme.Vazan" />
         <activity
+            android:name=".ui.activity.EntryDetailActivity"
+            android:exported="false"
+            android:label="@string/title_activity_entry_detail"
+            android:theme="@style/Theme.Vazan" />
+        <activity
             android:name=".ui.activity.SettingsActivity"
             android:exported="false"
             android:label="@string/title_activity_settings"

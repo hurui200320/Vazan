@@ -149,7 +149,7 @@ fun <T> ConfigSelectItem(
                     onExpandedChange = { expanded = !expanded }
                 ) {
                     TextField(
-                        value = selected?.let{itemToString(it)} ?: "",
+                        value = selected?.let { itemToString(it) } ?: "",
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },

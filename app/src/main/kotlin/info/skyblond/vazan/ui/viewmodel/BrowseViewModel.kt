@@ -1,5 +1,7 @@
 package info.skyblond.vazan.ui.viewmodel
 
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import info.skyblond.vazan.domain.model.JimEntry
-import info.skyblond.vazan.domain.repository.ConfigRepository
 import info.skyblond.vazan.domain.repository.JimRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,11 +25,13 @@ class BrowseViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         loading = true
-        entryIds.clear()
         val res = jimRepository.browse(currentParentId).mapNotNull {
             jimRepository.view(it)
         }
+        synchronized(entryIds) {
+            entryIds.clear()
+            entryIds.addAll(res)
+        }
         loading = false
-        entryIds.addAll(res)
     }
 }

@@ -2,6 +2,7 @@
     <string name="app_name">Vazan</string>
     <string name="title_activity_backup">BackupActivity</string>
     <string name="title_activity_move_to">MoveToActivity</string>
+    <string name="title_activity_entry_detail">EntryDetailActivity</string>
     <string name="title_activity_quick_scan">QuickScanActivity</string>
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="title_activity_browse">BrowseActivity</string>

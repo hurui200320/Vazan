@@ -39,11 +39,11 @@ import info.skyblond.vazan.ui.intent
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.MaterialColors
 import info.skyblond.vazan.ui.theme.VazanTheme
-import info.skyblond.vazan.ui.viewmodel.PreparePrintActivity
+import info.skyblond.vazan.ui.viewmodel.PreparePrintViewModel
 
 @AndroidEntryPoint
 class PreparePrintActivity : VazanActivity() {
-    private val viewModel: PreparePrintActivity by viewModels()
+    private val viewModel: PreparePrintViewModel by viewModels()
 
     override val permissionExplanation: Map<String, String> = emptyMap()
 
@@ -153,7 +153,7 @@ class PreparePrintActivity : VazanActivity() {
                                     ExposedDropdownMenu(
                                         expanded = expanded, onDismissRequest = { expanded = false }
                                     ) {
-                                        LabelEncoding.LabelType.values().forEach {
+                                        LabelEncoding.LabelType.entries.forEach {
                                             DropdownMenuItem(text = { Text(text = it.name) },
                                                 onClick = { expanded = false; selected = it })
                                         }

@@ -95,7 +95,7 @@ class JimRepositoryRetrofitImpl @Inject constructor(
         entryId: String,
         fieldValuePairs: List<Pair<String, String?>>
     ): JimEntry? = safeDoing(null) {
-        val params = listOf(entryId, *fieldValuePairs.toTypedArray())
+        val params = listOf(entryId, *fieldValuePairs.flatMap { listOf(it.first, it.second) }.toTypedArray())
         service.sendEntryResp(
             jimReq("update_entry", params)
         ).let {
@@ -135,7 +135,7 @@ class JimRepositoryRetrofitImpl @Inject constructor(
         entryId: String, name: String,
         fieldValuePairs: List<Pair<String, String?>>
     ): JimEntry? = safeDoing(null) {
-        val params = listOf(entryId, name, *fieldValuePairs.toTypedArray())
+        val params = listOf(entryId, name, *fieldValuePairs.flatMap { listOf(it.first, it.second) }.toTypedArray())
         service.sendEntryResp(
             jimReq("update_meta", params)
         ).let {

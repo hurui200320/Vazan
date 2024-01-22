@@ -14,7 +14,7 @@ import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
-class PreparePrintActivity @Inject constructor(
+class PreparePrintViewModel @Inject constructor(
     private val labelRepository: LabelRepository
 ) : ViewModel() {
     var labelType by mutableStateOf(LabelEncoding.LabelType.BOX)
