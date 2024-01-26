@@ -3,11 +3,17 @@ package info.skyblond.vazan.ui.activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.pm.PackageManager
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.ui.intent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentLinkedQueue
 
 @AndroidEntryPoint
@@ -66,4 +72,19 @@ abstract class VazanActivity : ComponentActivity() {
             scannerCallbackQueue.offer(onSuccess to onFailed)
             scannerLauncher.launch(intent(ScannerActivity::class))
         }
+
+    private val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME)
+
+    /**
+     * @param toneType [ToneGenerator]
+     * */
+    protected fun playTone(toneType: Int) = lifecycleScope.launch {
+        withContext(Dispatchers.Main) {
+            toneGen.startTone(toneType)
+        }
+    }
+
+    protected fun playToneOk() = playTone(ToneGenerator.TONE_CDMA_NETWORK_BUSY_ONE_SHOT)
+    protected fun playToneErr() = playTone(ToneGenerator.TONE_CDMA_PIP)
+
 }

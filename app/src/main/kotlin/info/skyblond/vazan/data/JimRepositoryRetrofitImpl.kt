@@ -134,9 +134,9 @@ class JimRepositoryRetrofitImpl @Inject constructor(
     override suspend fun updateMeta(
         entryId: String, name: String,
         fieldValuePairs: List<Pair<String, String?>>
-    ): JimEntry? = safeDoing(null) {
+    ): JimMeta? = safeDoing(null) {
         val params = listOf(entryId, name, *fieldValuePairs.flatMap { listOf(it.first, it.second) }.toTypedArray())
-        service.sendEntryResp(
+        service.sendMetaResp(
             jimReq("update_meta", params)
         ).let {
             if (it.err != null) {
@@ -147,7 +147,7 @@ class JimRepositoryRetrofitImpl @Inject constructor(
 
     override suspend fun deleteMeta(entryId: String, name: String): JimMeta? = safeDoing(null) {
         service.sendMetaResp(
-            jimReq("delete_entry", listOf(entryId, name))
+            jimReq("delete_meta", listOf(entryId, name))
         ).let {
             if (it.err != null) {
                 throw RuntimeException("Failed deleting meta `${entryId}`: ${it.err}")

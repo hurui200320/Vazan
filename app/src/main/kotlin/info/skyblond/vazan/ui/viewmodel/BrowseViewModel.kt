@@ -23,6 +23,8 @@ class BrowseViewModel @Inject constructor(
     val entryIds = mutableStateListOf<JimEntry>()
     var loading by mutableStateOf(false)
 
+    private var currentEntry: JimEntry? by mutableStateOf(null)
+
     fun refresh() = viewModelScope.launch {
         loading = true
         val res = jimRepository.browse(currentParentId).mapNotNull {
@@ -32,6 +34,34 @@ class BrowseViewModel @Inject constructor(
             entryIds.clear()
             entryIds.addAll(res)
         }
+        currentEntry = currentParentId?.let { jimRepository.view(it) }
         loading = false
+    }
+
+    fun getSubTypeOptions() = buildList {
+        // only location can have sub locations
+        if (currentParentId == null || currentEntry?.type == "LOCATION")
+            add("LOCATION")
+        // location and box can have sub box
+        if (currentParentId == null || currentEntry?.type == "LOCATION" || currentEntry?.type == "BOX")
+            add("BOX")
+        // location and box can have sub item
+        if (currentParentId == null || currentEntry?.type == "LOCATION" || currentEntry?.type == "BOX")
+            add("ITEM")
+    }
+
+    fun guessType(entryId: String, oldType: String): String = when (entryId.firstOrNull()) {
+        'L' -> "LOCATION"
+        'B' -> "BOX"
+        'I' -> "ITEM"
+        else -> oldType
+    }
+
+    fun createEntry(
+        newEntryId: String, type: String,
+        onSuccess: (JimEntry) -> Unit, onFailure: () -> Unit
+    ) = viewModelScope.launch {
+        val t = jimRepository.createEntry(newEntryId.trim(), type, currentParentId)
+        t?.let { onSuccess(it) } ?: onFailure()
     }
 }

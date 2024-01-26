@@ -32,6 +32,6 @@ interface JimRepository {
         value: String = ""
     ): JimEntry?
 
-    suspend fun updateMeta(entryId: String, name: String, fieldValuePairs: List<Pair<String, String?>>): JimEntry?
+    suspend fun updateMeta(entryId: String, name: String, fieldValuePairs: List<Pair<String, String?>>): JimMeta?
     suspend fun deleteMeta(entryId: String, name: String): JimMeta?
 }
