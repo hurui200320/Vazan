@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -52,6 +53,19 @@ class QuickScanActivity : VazanActivity() {
                                                 )
                                             })
                                         }
+                                    },
+                                    onFailed = { showToast("Scan cancelled/failed") }
+                                )
+                            },
+                            MenuItem(icon = Icons.Outlined.Search, action = "Quick View") {
+                                scanBarcode(
+                                    onSuccess = {
+                                        startActivity(intent(EntryDetailActivity::class).apply {
+                                            putExtra(
+                                                EntryDetailActivity.INTENT_STRING_EXTRA_ENTRY_ID,
+                                                it
+                                            )
+                                        })
                                     },
                                     onFailed = { showToast("Scan cancelled/failed") }
                                 )
