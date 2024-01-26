@@ -21,24 +21,3 @@ abstract class ConfigDao {
     @Delete
     abstract suspend fun deleteConfig(config: Config)
 }
-
-@Dao
-abstract class LabelDao {
-    @Query("SELECT * FROM labels")
-    abstract fun listLabels(): List<Label>
-
-    @Query("SELECT * FROM labels WHERE label_id = :labelId")
-    abstract suspend fun getLabelById(labelId: String): Label?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun insertOrUpdateLabel(label: Label)
-
-    @Delete
-    abstract suspend fun deleteLabel(label: Label)
-
-    @Query("DELETE FROM labels WHERE label_status = :status")
-    abstract suspend fun deleteLabelByStatus(status: Label.Status)
-
-    @Query("DELETE FROM labels WHERE label_status = :status AND version != :latestVersion")
-    abstract suspend fun deleteOldLabelsByStatus(status: Label.Status, latestVersion: Long)
-}

@@ -56,6 +56,10 @@ class PrinterActivity : VazanActivity() {
         }
     }
 
+    companion object {
+        const val INTENT_STRING_EXTRA_LABEL = "label"
+    }
+
     private fun cancel(str: String) {
         showToast(str)
         setResult(RESULT_CANCELED)
@@ -71,7 +75,7 @@ class PrinterActivity : VazanActivity() {
                     cancel("Bluetooth adapter not found")
                     return
                 }
-        viewModel.label = intent.getStringExtra("label") ?: kotlin.run {
+        viewModel.label = intent.getStringExtra(INTENT_STRING_EXTRA_LABEL) ?: kotlin.run {
             cancel("Invalid label")
             return
         }
@@ -131,7 +135,10 @@ class PrinterActivity : VazanActivity() {
                         }
                         Spacer(modifier = Modifier.fillMaxHeight(0.02f))
                         Text(
-                            text = "Paper: ${viewModel.getPaperSize().let { it.displayName + ", gap " + it.gap + " mm" }}",
+                            text = "Paper: ${
+                                viewModel.getPaperSize()
+                                    .let { it.displayName + ", gap " + it.gap + " mm" }
+                            }",
                             modifier = Modifier
                                 .padding(10.dp)
                                 .clickable {
@@ -180,9 +187,12 @@ class PrinterActivity : VazanActivity() {
                         Button(
                             onClick = {
                                 viewModel.printing = true
-                                viewModel.print{
+                                viewModel.print {
                                     setResult(RESULT_OK, Intent().apply {
-                                        putExtra("label", viewModel.label)
+                                        putExtra(
+                                            PreparePrintActivity.INTENT_STRING_EXTRA_LABEL,
+                                            viewModel.label
+                                        )
                                     })
                                     finish()
                                 }

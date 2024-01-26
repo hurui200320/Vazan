@@ -1,0 +1,50 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "086b7d67d15e33af84c1862f47e67b4c",
+    "entities": [
+      {
+        "tableName": "configs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`config_key` TEXT NOT NULL, `config_value` TEXT NOT NULL, PRIMARY KEY(`config_key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "config_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "config_value",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "config_key"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_configs_config_key",
+            "unique": true,
+            "columnNames": [
+              "config_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_configs_config_key` ON `${TABLE_NAME}` (`config_key`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '086b7d67d15e33af84c1862f47e67b4c')"
+    ]
+  }
+}

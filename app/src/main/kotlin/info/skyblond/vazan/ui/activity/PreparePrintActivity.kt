@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import dagger.hilt.android.AndroidEntryPoint
-import info.skyblond.vazan.data.room.Label
 import info.skyblond.vazan.domain.LabelEncoding
 import info.skyblond.vazan.ui.intent
 import info.skyblond.vazan.ui.showToast
@@ -47,13 +46,19 @@ class PreparePrintActivity : VazanActivity() {
 
     override val permissionExplanation: Map<String, String> = emptyMap()
 
+    companion object {
+        const val INTENT_STRING_EXTRA_LABEL = "label"
+    }
+
     private val printerActivityLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
             if (r.resultCode == RESULT_OK) {
-                r.data?.getStringExtra("label")?.also {
-                    viewModel.afterPrintLabel(it)
+                r.data?.getStringExtra(INTENT_STRING_EXTRA_LABEL)?.also {
+                    playToneOk()
+                    showToast("Label $it printed")
                 } ?: showToast("Invalid print result")
             } else {
+                playToneErr()
                 showToast("Print cancelled")
             }
         }
@@ -87,8 +92,7 @@ class PreparePrintActivity : VazanActivity() {
                         Text(
                             text = "Status: ${viewModel.labelStatus}",
                             color = when (viewModel.labelStatus) {
-                                Label.Status.IN_USE.name -> MaterialColors.Red600
-                                Label.Status.PRINTED.name -> MaterialColors.Orange600
+                                "IN_USE" -> MaterialColors.Red600
                                 "NEW" -> MaterialColors.Green600
                                 else -> MaterialColors.Cyan600
                             }
@@ -123,7 +127,10 @@ class PreparePrintActivity : VazanActivity() {
                             onClick = {
                                 printerActivityLauncher.launch(
                                     intent(PrinterActivity::class).also {
-                                        it.putExtra("label", viewModel.labelValue)
+                                        it.putExtra(
+                                            PrinterActivity.INTENT_STRING_EXTRA_LABEL,
+                                            viewModel.labelValue
+                                        )
                                     }
                                 )
                             }

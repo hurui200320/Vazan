@@ -2,7 +2,6 @@ package info.skyblond.vazan.data.room
 
 import androidx.room.AutoMigration
 import androidx.room.Database
-import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
 import androidx.room.RenameColumn
 import androidx.room.RoomDatabase
@@ -16,11 +15,11 @@ import java.io.Reader
 import java.io.Writer
 
 @Database(
-    entities = [Config::class, Label::class], // TODO: remove Label
-    version = 3, // TODO: 4
+    entities = [Config::class],
+    version = 4,
     autoMigrations = [
         AutoMigration(from = 2, to = 3, spec = AppDatabase.From2To3AutoMigration::class),
-//        AutoMigration(from = 3, to = 4, spec = AppDatabase.From3To4AutoMigration::class),
+        AutoMigration(from = 3, to = 4, spec = AppDatabase.From3To4AutoMigration::class),
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,7 +30,6 @@ abstract class AppDatabase : RoomDatabase() {
     class From3To4AutoMigration : AutoMigrationSpec
 
     abstract val configDao: ConfigDao
-    abstract val labelDao: LabelDao
 
     fun export(writer: Writer) {
         val bencodeWriter = BencodeWriter(writer)

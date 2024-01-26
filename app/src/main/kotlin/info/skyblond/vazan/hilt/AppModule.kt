@@ -9,10 +9,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import info.skyblond.vazan.data.retrofit.JimService
-import info.skyblond.vazan.data.retrofit.MementoService
 import info.skyblond.vazan.data.room.AppDatabase
 import info.skyblond.vazan.data.room.ConfigDao
-import info.skyblond.vazan.data.room.LabelDao
 import info.skyblond.vazan.domain.interceptor.JimEncryptionInterceptor
 import info.skyblond.vazan.domain.interceptor.JimHostSelectionInterceptor
 import info.skyblond.vazan.domain.repository.ConfigRepository
@@ -37,20 +35,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideLabelDao(database: AppDatabase): LabelDao = database.labelDao
-
-    @Provides
-    @Singleton
     fun provideKotlinMoshi(): Moshi = Moshi.Builder()
         .addLast(KotlinJsonAdapterFactory())
         .build()
-
-    @Provides
-    @Singleton
-    fun provideMementoService(moshi: Moshi): MementoService = Retrofit.Builder()
-        .baseUrl("https://api.mementodatabase.com/")
-        .addConverterFactory(MoshiConverterFactory.create(moshi))
-        .build().create()
 
     @Provides
     @Singleton

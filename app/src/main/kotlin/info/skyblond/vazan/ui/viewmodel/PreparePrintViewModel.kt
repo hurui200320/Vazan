@@ -6,23 +6,24 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import info.skyblond.vazan.data.room.Label
 import info.skyblond.vazan.domain.LabelEncoding
-import info.skyblond.vazan.domain.repository.LabelRepository
+import info.skyblond.vazan.domain.repository.JimRepository
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
 class PreparePrintViewModel @Inject constructor(
-    private val labelRepository: LabelRepository
+    private val jimRepository: JimRepository
 ) : ViewModel() {
     var labelType by mutableStateOf(LabelEncoding.LabelType.BOX)
     var labelValue by mutableStateOf("")
     var labelStatus by mutableStateOf("")
 
     private suspend fun refreshLabelStatus() {
-        labelStatus = labelRepository.getLabelById(labelValue)?.status?.name ?: "NEW"
+        labelStatus = jimRepository.view(labelStatus)?.let { "IN_USE" } ?: "NEW"
     }
 
     private fun getLabelType(str: String): LabelEncoding.LabelType? = when (str.take(1)) {
@@ -32,12 +33,13 @@ class PreparePrintViewModel @Inject constructor(
     }
 
     fun generateLabel() = viewModelScope.launch {
-        var label: String
-        do {
-            label = LabelEncoding.encodeToLabel(labelType, LabelEncoding.random(Random))
-        } while (labelRepository.getLabelById(label) != null)
-        labelValue = label
-        refreshLabelStatus()
+        labelStatus = "UNKNOWN"
+        withTimeout(5000) {
+            do {
+                labelValue = LabelEncoding.encodeToLabel(labelType, LabelEncoding.random(Random))
+            } while (jimRepository.view(labelValue) != null)
+            if (isActive) refreshLabelStatus()
+        }
     }
 
     fun setLabel(str: String): Boolean {
@@ -52,24 +54,7 @@ class PreparePrintViewModel @Inject constructor(
             && str.length == 10
             && str.drop(1).uppercase().all { it in LabelEncoding.charset }
 
-    fun afterPrintLabel(str: String) = viewModelScope.launch {
-        // for existing label, it's either printed or in_use, no need to update them
-        if (labelRepository.getLabelById(str) == null) {
-            // this is new label, mark it as printed
-            labelRepository.insertOrUpdateLabel(
-                Label(
-                    labelId = str,
-                    status = Label.Status.PRINTED,
-                    version = 0,
-                    entityId = null
-                )
-            )
-        }
-        if (str == labelValue) refreshLabelStatus()
-    }
-
     init {
         generateLabel()
     }
-
 }

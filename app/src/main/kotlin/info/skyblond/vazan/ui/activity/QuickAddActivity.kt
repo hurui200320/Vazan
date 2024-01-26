@@ -15,16 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
-import info.skyblond.vazan.ui.composable.OneLineText
 import info.skyblond.vazan.ui.showToast
 import info.skyblond.vazan.ui.theme.MaterialColors
 import info.skyblond.vazan.ui.theme.VazanTheme
-import info.skyblond.vazan.ui.viewmodel.MoveToViewModel
+import info.skyblond.vazan.ui.viewmodel.QuickAddViewModel
 import kotlin.concurrent.thread
 
 @AndroidEntryPoint
-class MoveToActivity : VazanActivity() {
-    private val viewModel: MoveToViewModel by viewModels()
+class QuickAddActivity : VazanActivity() {
+    private val viewModel: QuickAddViewModel by viewModels()
 
     override val permissionExplanation: Map<String, String> = emptyMap()
 
@@ -37,22 +36,6 @@ class MoveToActivity : VazanActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.targetEntityId = intent.getStringExtra("entity_id") ?: kotlin.run {
-            showToast("entity_id not found"); finish(); return
-        }
-        viewModel.targetType = intent.getStringExtra("target_type") ?: kotlin.run {
-            showToast("target_type not found"); finish(); return
-        }
-        intent.getStringExtra("target_name")?.let { viewModel.targetName = it }
-
-        when (viewModel.targetType) {
-            "location", "box" -> {}
-            else -> {
-                showToast("entry_type invalid: location or box, got ${viewModel.targetType}")
-                finish()
-                return
-            }
-        }
         thread { startScan() }
         setContent {
             VazanTheme {
@@ -67,13 +50,9 @@ class MoveToActivity : VazanActivity() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Move to: ${viewModel.targetType}",
+                            text = "Quick Add to Root",
                             fontSize = 25.sp, lineHeight = 25.sp
                         )
-                        Spacer(modifier = Modifier.fillMaxHeight(0.01f))
-                        OneLineText(text = "Target: ${viewModel.targetName}")
-                        Spacer(modifier = Modifier.fillMaxHeight(0.01f))
-                        OneLineText(text = "Target: ${viewModel.targetEntityId}")
                         Spacer(modifier = Modifier.fillMaxHeight(0.01f))
                         Text(
                             text = "Current: ${viewModel.currentLabel}",

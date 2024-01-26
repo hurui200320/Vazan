@@ -56,9 +56,14 @@
             android:label="@string/title_activity_quick_scan"
             android:theme="@style/Theme.Vazan" />
         <activity
-            android:name=".ui.activity.MoveToActivity"
+            android:name=".ui.activity.QuickMoveToActivity"
             android:exported="false"
             android:label="@string/title_activity_move_to"
+            android:theme="@style/Theme.Vazan" />
+        <activity
+            android:name=".ui.activity.QuickAddActivity"
+            android:exported="false"
+            android:label="@string/title_activity_add"
             android:theme="@style/Theme.Vazan" />
         <activity
             android:name=".ui.activity.EntryDetailActivity"

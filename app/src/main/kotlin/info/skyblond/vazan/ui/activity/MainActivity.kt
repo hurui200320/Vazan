@@ -3,7 +3,6 @@ package info.skyblond.vazan.ui.activity
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Backup
@@ -13,8 +12,6 @@ import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import info.skyblond.vazan.ui.composable.GridMenu
@@ -43,17 +40,14 @@ class MainActivity : VazanActivity() {
                                 icon = Icons.Outlined.EventNote,
                                 action = "Browse"
                             ) { startActivity(BrowseActivity::class) },
-                            // TODO: Search -> keywords -> list -> Entry details
-                            // TODO: View ->Entry details -> Browse children, entry UD, meta CRUD, print label...
                             MenuItem(
                                 icon = Icons.Outlined.Print,
                                 action = "Print"
                             ) { startActivity(PreparePrintActivity::class) },
                             MenuItem(
                                 icon = Icons.Outlined.QrCodeScanner,
-                                action = "Quick scan", // TODO add, move
+                                action = "Quick scan",
                             ) { startActivity(QuickScanActivity::class) },
-                            // TODO: Done
                             MenuItem(
                                 icon = Icons.Outlined.Settings,
                                 action = "Settings",

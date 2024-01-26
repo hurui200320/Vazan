@@ -375,7 +375,19 @@ class EntryDetailActivity : VazanActivity() {
                                 ) {
                                     Text(text = "Delete")
                                 }
-                                // TODO: Button for printing the label
+                                Button(
+                                    onClick = {
+                                        startActivity(intent(PrinterActivity::class).also {
+                                            it.putExtra(
+                                                PrinterActivity.INTENT_STRING_EXTRA_LABEL,
+                                                viewModel.entry.entryId
+                                            )
+                                        })
+                                    },
+                                    modifier = Modifier.padding(5.dp, 2.dp)
+                                ) {
+                                    Text(text = "Print")
+                                }
                             }
                         }
 

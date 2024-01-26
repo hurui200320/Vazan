@@ -1,7 +1,5 @@
 package info.skyblond.vazan.ui.viewmodel
 
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf

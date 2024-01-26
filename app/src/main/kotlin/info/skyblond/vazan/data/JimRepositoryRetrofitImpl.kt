@@ -1,26 +1,13 @@
 package info.skyblond.vazan.data
 
 import android.util.Log
-import info.skyblond.vazan.data.retrofit.EntryDto
 import info.skyblond.vazan.data.retrofit.JimRequestDto
 import info.skyblond.vazan.data.retrofit.JimService
-import info.skyblond.vazan.data.retrofit.MementoService
-import info.skyblond.vazan.data.retrofit.UpdateEntryDto
-import info.skyblond.vazan.domain.SettingsKey
 import info.skyblond.vazan.domain.model.JimEntry
 import info.skyblond.vazan.domain.model.JimEntry.Companion.toModel
 import info.skyblond.vazan.domain.model.JimMeta
 import info.skyblond.vazan.domain.model.JimMeta.Companion.toModel
-import info.skyblond.vazan.domain.model.LibraryBrief
-import info.skyblond.vazan.domain.model.LibraryField
-import info.skyblond.vazan.domain.repository.ConfigRepository
 import info.skyblond.vazan.domain.repository.JimRepository
-import info.skyblond.vazan.domain.repository.MementoRepository
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import retrofit2.HttpException
-import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -95,7 +82,9 @@ class JimRepositoryRetrofitImpl @Inject constructor(
         entryId: String,
         fieldValuePairs: List<Pair<String, String?>>
     ): JimEntry? = safeDoing(null) {
-        val params = listOf(entryId, *fieldValuePairs.flatMap { listOf(it.first, it.second) }.toTypedArray())
+        val params = listOf(
+            entryId, *fieldValuePairs.flatMap { listOf(it.first, it.second) }.toTypedArray()
+        )
         service.sendEntryResp(
             jimReq("update_entry", params)
         ).let {
@@ -135,7 +124,10 @@ class JimRepositoryRetrofitImpl @Inject constructor(
         entryId: String, name: String,
         fieldValuePairs: List<Pair<String, String?>>
     ): JimMeta? = safeDoing(null) {
-        val params = listOf(entryId, name, *fieldValuePairs.flatMap { listOf(it.first, it.second) }.toTypedArray())
+        val params = listOf(
+            entryId, name,
+            *fieldValuePairs.flatMap { listOf(it.first, it.second) }.toTypedArray()
+        )
         service.sendMetaResp(
             jimReq("update_meta", params)
         ).let {
