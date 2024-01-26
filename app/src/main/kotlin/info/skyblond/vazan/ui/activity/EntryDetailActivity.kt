@@ -1,5 +1,6 @@
 package info.skyblond.vazan.ui.activity
 
+import android.content.ClipboardManager
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -46,6 +47,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -266,9 +269,14 @@ class EntryDetailActivity : VazanActivity() {
                             .padding(10.dp)
                             .verticalScroll(rememberScrollState()),
                     ) {
+                        val clipboardManager = LocalClipboardManager.current
                         OneLineText(
                             text = "${viewModel.entry.type} ${viewModel.entry.entryId}",
                             initialFontSize = 30.sp,
+                            modifier = Modifier.clickable {
+                                clipboardManager.setText(AnnotatedString(viewModel.entry.entryId))
+                                showToast("Copied to clipboard")
+                            }
                         )
                         Divider()
 
