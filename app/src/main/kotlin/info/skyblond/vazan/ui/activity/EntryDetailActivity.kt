@@ -395,6 +395,21 @@ class EntryDetailActivity : VazanActivity() {
                                 ) {
                                     Text(text = "Print")
                                 }
+                                if (viewModel.entry.parentId != null) {
+                                    Button(
+                                        onClick = {
+                                            startActivity(intent(EntryDetailActivity::class).also {
+                                                it.putExtra(
+                                                    INTENT_STRING_EXTRA_ENTRY_ID,
+                                                    viewModel.entry.parentId
+                                                )
+                                            })
+                                        },
+                                        modifier = Modifier.padding(5.dp, 2.dp)
+                                    ) {
+                                        Text(text = "View parent")
+                                    }
+                                }
                             }
                         }
 
