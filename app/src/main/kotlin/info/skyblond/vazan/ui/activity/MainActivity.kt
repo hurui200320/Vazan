@@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.EventNote
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.QrCodeScanner
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -45,6 +46,10 @@ class MainActivity : VazanActivity() {
                                 action = "Print"
                             ) { startActivity(PreparePrintActivity::class) },
                             MenuItem(
+                                icon = Icons.Outlined.Search,
+                                action = "Search"
+                            ) { startActivity(KeywordSearchActivity::class) },
+                            MenuItem(
                                 icon = Icons.Outlined.QrCodeScanner,
                                 action = "Quick scan",
                             ) { startActivity(QuickScanActivity::class) },
@@ -55,8 +60,7 @@ class MainActivity : VazanActivity() {
                             MenuItem(
                                 icon = Icons.Outlined.Backup,
                                 action = "Backup",
-                            ) { startActivity(BackupActivity::class) },
-
+                            ) { startActivity(BackupActivity::class) }
                         )
                     )
                 }

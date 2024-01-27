@@ -27,6 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -83,9 +86,44 @@ fun EntryTagFlow(metadataList: List<JimMeta>, onClick: ((JimMeta) -> Unit)? = nu
     }
 }
 
+@Composable
+private fun String.handleKeywords(
+    keywords: List<String>,
+    keywordStyle: @Composable (String) -> SpanStyle
+): AnnotatedString {
+    var sIndex = 0
+    // startIndex, keyword index
+    val result = mutableListOf<Pair<Int, Int>>()
+    while (sIndex < this.length) {
+        val (keywordIndex, i) = keywords.mapIndexed { index, k ->
+            index to this.indexOf(k, startIndex = sIndex, ignoreCase = true)
+        }.filter { it.second != -1 }.minByOrNull { it.second } ?: (0 to -1)
+        // check if we really found a match
+        if (i == -1) break
+        // now we get the first keyword that matches
+        sIndex = i + keywords[keywordIndex].length
+        result.add(i to keywordIndex)
+    }
+    return buildAnnotatedString {
+        append(this@handleKeywords)
+        while (result.isNotEmpty()) {
+            val (i, kIndex) = result.removeFirst()
+            addStyle(
+                keywordStyle(keywords[kIndex]),
+                start = i,
+                end = i + keywords[kIndex].length
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EntryCard(entry: JimEntry) {
+fun EntryCard(
+    entry: JimEntry,
+    keywords: List<String> = emptyList(),
+    keywordStyle: @Composable (String) -> SpanStyle = { SpanStyle() }
+) {
     val context = LocalContext.current
     Box(
         modifier = Modifier
@@ -108,12 +146,12 @@ fun EntryCard(entry: JimEntry) {
             modifier = Modifier.fillMaxSize(),
         ) {
             Text(
-                text = "${entry.type} ${entry.entryId}",
+                text = "${entry.type} ${entry.entryId.handleKeywords(keywords, keywordStyle)}",
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(10.dp, 10.dp, 10.dp, 2.dp)
             )
             Text(
-                text = entry.name,
+                text = entry.name.handleKeywords(keywords, keywordStyle),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(10.dp, 6.dp),
                 maxLines = 1,
@@ -121,7 +159,7 @@ fun EntryCard(entry: JimEntry) {
             )
             entry.note.lines().take(2).forEach {
                 Text(
-                    text = it,
+                    text = it.handleKeywords(keywords, keywordStyle),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(12.dp, 0.dp, 10.dp, 0.dp),
                     maxLines = 1,

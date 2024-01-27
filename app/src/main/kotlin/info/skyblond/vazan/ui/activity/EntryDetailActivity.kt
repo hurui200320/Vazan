@@ -130,6 +130,7 @@ class EntryDetailActivity : VazanActivity() {
                 },
                 confirmButton = {
                     Button(
+                        enabled = validator(textFieldStatus),
                         onClick = {
                             showAlertDialog.value = false
                             applyChanges(textFieldStatus)
@@ -139,7 +140,6 @@ class EntryDetailActivity : VazanActivity() {
                 },
                 dismissButton = {
                     Button(
-                        enabled = validator(textFieldStatus),
                         onClick = {
                             showAlertDialog.value = false
                         }) {

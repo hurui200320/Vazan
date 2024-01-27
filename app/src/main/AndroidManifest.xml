@@ -47,6 +47,11 @@
             android:label="@string/title_activity_prepare_print"
             android:theme="@style/Theme.Vazan" />
         <activity
+            android:name=".ui.activity.KeywordSearchActivity"
+            android:exported="false"
+            android:label="@string/title_activity_keyword_search"
+            android:theme="@style/Theme.Vazan" />
+        <activity
             android:name=".ui.activity.PrinterActivity"
             android:exported="false"
             android:label="@string/title_activity_printer"
