@@ -1,6 +1,6 @@
 # Vazan
 
-**_Note: This branch is V3, a half rewrite.
+**_Note: This branch is V3, a half rewrite which switched from memento database to my own backend.
 For V2, see `memento-archive`.
 For the v1, see branch `old-archive`._**
 
@@ -17,57 +17,59 @@ Thus I wrote [jim-cli](https://github.com/hurui200320/jim-cli), a cli-based inve
 The cli interface is good enough for most times, but I still need a way to print barcode and work without
 laptop in reach, so I designed a HTTP interface and adopted this app from memento database to jim.
 
-# WIP, TODO: below
-
 ## What it does?
 
-First of all, in V2, all data is stored in the memento database, an Android/iOS app that offers
-something like a database, but not technically the relational database. However, it support barcode
-and foreign key (the ability to reference other entities in a library/table), and is pretty good to
-use.
+It connects to [jim-cli](https://github.com/hurui200320/jim-cli) using HTTP but in an encrypted way.
+Functionally speaking, it can do everything the cli program can do: CRUD of entries and metadata,
+search for keywords, etc.
+Additionally, it has some support for barcode scanning and printing.
 
-> Note: Memento database does require a subscription to unlock the full feature (cloud thing), and
-> this app uses the cloud api they offer. So technically speaking, there is a paywall.
+## Barcode
 
-Despite Memento database offers a great way to store data and to interact with them (the UI part is
-the most important part, I could never make something like that, frontend is just too hard to me),
-it doesn't know how to print labels.
+Barcode is the core of this app. In jim-cli, there is no requirement about what id you use, since it's just a cli program.
+This app however, designed a label encoding system for boxes and items,
+where you can actually print it using thermal printers and stick them on the side of boxes and items.
 
-By design, you print label stickers (normally using thermal printer) and stick them to your containers
-and items, then use memento database to link those stickers (barcode) to the box/item. Now you can
-find all your items on your phone. To print those stickers, you have to make sure they are unique.
-Otherwise you will have two box with same barcode. But how?
+The barcode is 10 digits long, the first letter marks the type: `B` for boxes, `I` for items.
+The rest 9 digits encodes a number using characters from `23456789ABCDEFGHJKLMNPQRSTUVWXYZ`.
+Notice that there is no `1` and `L`, `0` and `o`, such characters and cause confusion when manually typing.
+In total, 9 digits can represent about 35 trillion entries.
+Considering we randomly generate the label, unless you really have a lot of things to store,
+the collision chance is fairly small.
+But I do have procedures to prevent collision.
 
-The simplest solution is to use the memento database's export function. Export your existing barcodes
-into a CSV file, and somehow make sure you don't print the existing label again. But that requires
-software support. A lot of software can print data from a excel, but can't generate data to avoid a
-given excel.
+The encoding for each digits is different too, so a smaller number like 2 won't looks like `AAAAAAAA2`,
+but instead something like `ZJRBAPUEM`.
+This is ensure to not generate similar looking labels that will cause confusion when someone trying to
+spot some box with certain barcode but ended up picking up the wrong one with 1 digit different.
 
-Yeah, I know, you can write a simple Java/Python/Shell script to do that. But do you really want to
-use your laptop when you're moving? It's already a mess, and you add more. However, using a phone will
-not contribute to the mess. So I wrote this app.
+Currently, I choose CODE 128 for 1D barcode and DATA MATRIX for 2D barcode.
+I recommend using DATA MATRIX for box which often offers a large surface area.
+In my region, post office use CODE 128 and QrCode on their tickets, so I choose DATA MATRIX to avoid
+accidentally scan the ticket barcode instead of my own one.
 
-By using the memento database's cloud api, this app can "sync", aka read your existing labels (box
-and item), store in it local cache. When generating new label, the app will avoid those existing ones,
-and ensure each time new one will be printed. Also, the app will track which label is printed, so you
-don't accidentally print two identical labels in different time.
+For barcode scanning, I use [Google's barcode scanner](https://developers.google.com/ml-kit/vision/barcode-scanning),
+so you can fork and modify to fit your own barcode choice.
 
-Besides, the app support "quick scan". For example, you're moving 10 box to a new location. To apply
-that change, you have to search the box and change the location, which requires multiple click on screen.
-The quick scan let you select one location, then scan multiple labels, send the change request to cloud.
-No need to click on screen anymore, just scan it.
+## Thermal printer
 
-## What about print?
+My thermal printer is G-Printer GP-M322.
+It support multiple modes but I use TSPL command set for sticker printing.
+It uses bluetooth SPP, which you need to pair with your phone, then the app make a socket connection
+to transfer printing command.
+The SPP UUID is `00001101-0000-1000-8000-00805F9B34FB`.
+If your printer use the same bluetooth SPP UUID and support TSPL command set, then the app should work with your printer.
 
-The print part makes this app not easy to use. Since the printer driver is hardcoded.
+To print a barcode, the app first generate a picture of the barcode, then print the raw data using TSPL command.
+No need to support different barcodes on the printer side.
 
-My thermal printer is G-Printer GP-M322. This is not the best thermal printer (can't print decent 
-pictures), but it does print labels, and print them really well. And most important, is that G-Printer
-offers SDK. Although the SDK is old and not-well-organized, the protocol is open. I implement my
-own driver for this printer, and it works well. In v1 I use paperang P2, which has no public documents,
-not mention SDKs.
+Paper types are defined by the size: width, length and gap.
+Currently all my papers are 2mm gap, and I only write support for 80mm x 60mm, 60mm x 80mm and 70mm x 30mm.
+I found them works pretty well with my printer.
+However, you can easily extend the paper types by generating the corresponding image and turns it into TSPL commands. 
 
-About labels, I use two different barcodes. For box, you got a lot of space to stick, thus I use 
+The general layouts are as follow.
+
 Data Matrix with a vertical layout:
 
 ```
@@ -85,12 +87,10 @@ Data Matrix with a vertical layout:
  └───────────────────────────────┘
 ```
 
-The data matrix offers a decent error correction, but in case the barcode is not working, there are
-also the text label for human to read. The encoding is special: it use digits and uppercase letter,
-but without digits 0 and 1, and letter o and i, thus you won't have to guess if a character is O or 0,
-1 or I.
+For paper shaped like a square, 2D barcode is used, along with the text version of the code, in case
+the barcode is damaged.
 
-For item, I use code128, which is a slim barcode, which considered the limited space you have on a item:
+Code 128, which is a slim barcode, is used on a slim paper type:
 
 ```
  ┌─────────────────────────────────────────────────────────────┐
@@ -101,39 +101,45 @@ For item, I use code128, which is a slim barcode, which considered the limited s
  └─────────────────────────────────────────────────────────────┘
 ```
 
-## What about memento's cloud API?
+## Quick operations
 
-To use their api, you firstly need an API key, which can be created on their desktop software.
-The API key must have read and write permission, and the libraries can only contains your 3 essential
-libraries.
+Beside normal CRUD of data, with the power of scanning a barcode, we can have some quick operations.
 
-There are 3 libraries required: Location, Box and item.
+### Quick Add
 
-The Location must has a text field for the location, like "XX, YY str., ZZ city", so you can distinguish
-it in the app.
+After printing a bunch of stickers, it would be great to scan them and add them into the system,
+before you stick them on the box or something else.
 
-The Box must has a barcode field for label, you may set it as read-only so you won't accidentally changed it.
-Also it requires a parent location field liked to location, and a parent box field like to box. The box
-can be located in one location, or in other boxes.
+This is a procedure to ensure your barcode is fresh and new. If you trying to add an existing barcode,
+the app will notice you.
 
-The item is same, a barcode field for label, a parent location field liked to location, and a parent
-box field like to box.
+The newly added entries will be placed under root.
 
-The barcode field is not required (you can have unlabeled box and items), but this app requires a
-label/barcode to index the item.
+### Quick move
 
-Also, the API has rate limit. For personal plan, the limit is 30 request per minutes, thus I have some
-hardcoded delay in the code to ease the rate limit.
+Want to move a lot of boxes or items to a new location, but don't want to find and update one by one?
 
-## What about my data?
+Just type (location id) or scan (box id) the target entry id, then keep scanning the item/box you move in.
+You can update up to 10 boxes/items per minute.
+Much faster than updating one by one.
 
-No data will be uploaded to me. It only send request to memento's cloud using your API key.
+### Quick view
 
-To backup your local database (the one for app storing labels, settings), you can export them
-as a bencode file, and import it later.
+In jim-cli, you have to type the entry id letters by letters if you want to view the details of it.
+With the barcode scanner, just scan the barcode and the app will show you the detail.
 
-## But how can I use it?
+No more typing.
 
-As I said, this is an app for my own need, so there is no public build to install. However, if this
-app _accidentally_ fit your needs too, and you _accidentally_ want to use this app, with **no guaranteed
-support or updates from me**, then feel free to open an issue, or send me an email, I'm glad to help.
+## Can anyone else use this app?
+
+Sure. Despite this app is solely created to meet my own need, if you have similar need, and you're
+willing to use jim-cli, then you can use this app freely.
+
+But do notice that this app comes with no warranty. You use it on your own.
+
+I may or may not help you solve your questions, implement new features you want/ask.
+No promise for now.
+
+But you're welcome to make modify to this app: fork it and change whatever fit your need.
+If you're generous enough, make a pr. If I don't like your pr, you may become a separate
+fork which may ended up better than my implementation. That's why I choose opensource.
