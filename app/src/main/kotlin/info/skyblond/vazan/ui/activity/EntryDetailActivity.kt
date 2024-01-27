@@ -1,6 +1,5 @@
 package info.skyblond.vazan.ui.activity
 
-import android.content.ClipboardManager
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -423,13 +422,13 @@ class EntryDetailActivity : VazanActivity() {
                         }
 
                         // TAG
-                        if (viewModel.confirmDeleteMetadata != null) {
-                            // when confirm delete, temporarily hide all buttons
+                        if (viewModel.confirmDeleteTag != null) {
+                            // when confirm delete, temporarily hide all tags
                             LaunchedEffect(key1 = Unit) {
                                 delay(3000)
-                                viewModel.confirmDeleteMetadata = null
+                                viewModel.confirmDeleteTag = null
                             }
-                            viewModel.confirmDeleteMetadata?.let { tag ->
+                            viewModel.confirmDeleteTag?.let { tag ->
                                 // apply the same padding, simulating the flow row
                                 Box(Modifier.padding(10.dp, 5.dp, 10.dp, 10.dp)) {
                                     EntryTag(
@@ -449,7 +448,7 @@ class EntryDetailActivity : VazanActivity() {
                         } else {
                             EntryTagFlow(viewModel.entry.metaList.filter { it.type == "TAG" }) {
                                 showToast("Tap again to delete")
-                                viewModel.confirmDeleteMetadata = it
+                                viewModel.confirmDeleteTag = it
                             }
                         }
 
@@ -466,6 +465,37 @@ class EntryDetailActivity : VazanActivity() {
                             ) {
                                 viewModel.updateMeta(meta.name, "value", it.trim()) {
                                     showToast("Failed to update value of ${meta.name}")
+                                }
+                            }
+                            var confirmDelete by remember { mutableStateOf(false) }
+                            Row(modifier = Modifier.padding(20.dp, 0.dp, 0.dp, 0.dp)) {
+                                if (confirmDelete) {
+                                    LaunchedEffect(key1 = Unit) {
+                                        delay(3000)
+                                        confirmDelete = false
+                                    }
+                                    Button(
+                                        onClick = {
+                                            viewModel.deleteMetadata(meta, { playToneOk() }) {
+                                                playToneErr()
+                                                showToast("Failed to delete metadata")
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                                            contentColor = MaterialTheme.colorScheme.error
+                                        ),
+                                        modifier = Modifier.padding(5.dp, 2.dp)
+                                    ) {
+                                        Text(text = "Confirm Delete")
+                                    }
+                                } else {
+                                    Button(
+                                        onClick = { if (!confirmDelete) confirmDelete = true },
+                                        modifier = Modifier.padding(5.dp, 2.dp)
+                                    ) {
+                                        Text(text = "Delete")
+                                    }
                                 }
                             }
                             Spacer(modifier = Modifier.width(10.dp))

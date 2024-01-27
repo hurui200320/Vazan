@@ -19,7 +19,7 @@ class EntryDetailViewModel @Inject constructor(
     var entry by mutableStateOf(JimEntry("", "", "", 0, "", "", emptyList()))
 
     var confirmDeleteEntry by mutableStateOf(false)
-    var confirmDeleteMetadata: JimMeta? by mutableStateOf(null)
+    var confirmDeleteTag: JimMeta? by mutableStateOf(null)
 
 
     fun getEntry(entryId: String, onFailure: () -> Unit) = viewModelScope.launch {
