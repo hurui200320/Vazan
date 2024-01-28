@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import info.skyblond.vazan.domain.model.JimEntry
 import info.skyblond.vazan.domain.repository.JimRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,14 +27,17 @@ class BrowseViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         loading = true
-        val res = jimRepository.browse(currentParentId).mapNotNull {
-            jimRepository.view(it)
+        val fetchCurrentEntry = launch {
+            currentEntry = currentParentId?.let { jimRepository.view(it) }
         }
+        val res = jimRepository.browse(currentParentId).map {
+            async { jimRepository.view(it) }
+        }.awaitAll().filterNotNull()
         synchronized(entryIds) {
             entryIds.clear()
             entryIds.addAll(res)
         }
-        currentEntry = currentParentId?.let { jimRepository.view(it) }
+        fetchCurrentEntry.join()
         loading = false
     }
 

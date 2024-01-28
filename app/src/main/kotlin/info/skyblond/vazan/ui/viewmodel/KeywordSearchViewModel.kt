@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import info.skyblond.vazan.domain.model.JimEntry
 import info.skyblond.vazan.domain.repository.JimRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,10 +32,10 @@ class KeywordSearchViewModel @Inject constructor(
         val keywords = keywordsList.filter { it.isNotBlank() }
         if (keywords.isNotEmpty()) {
             // search with keywordList and save result in resultList
-            jimRepository.search(keywords).asSequence().forEach { entryId ->
-                val e = jimRepository.view(entryId) ?: return@forEach
-                resultList.add(e)
-            }
+            val r = jimRepository.search(keywords).map {
+                async { jimRepository.view(it) }
+            }.awaitAll().filterNotNull()
+            resultList.addAll(r)
         }
 
         loading = false
