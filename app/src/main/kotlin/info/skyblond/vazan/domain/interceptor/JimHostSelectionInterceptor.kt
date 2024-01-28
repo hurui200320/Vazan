@@ -7,14 +7,10 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class JimHostSelectionInterceptor(
-    private val configRepository: ConfigRepository,
+    configRepository: ConfigRepository,
 ) : Interceptor {
 
-    private val host by lazy {
-        runBlocking {
-            configRepository.getConfigByKey(SettingsKey.JIM_HOST)?.value ?: ""
-        }
-    }
+    private val host by RefreshableConfig(configRepository, SettingsKey.JIM_HOST)
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val req = chain.request()

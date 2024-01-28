@@ -66,12 +66,12 @@ class SettingsActivity : VazanActivity() {
                             // jim api
                             item {
                                 TextConfig(settingKey = SettingsKey.JIM_HOST) {
-                                    showToast("Settings need restart the app to apply changes")
+                                    showToast("Changes need 5s to apply...")
                                 }
                             }
                             item {
                                 TextConfig(settingKey = SettingsKey.JIM_API_PASSWORD) {
-                                    showToast("Settings need restart the app to apply changes")
+                                    showToast("Changes need 5s to apply...")
                                 }
                             }
                             item { Divider() }

@@ -19,14 +19,10 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class JimEncryptionInterceptor(
-    private val configRepository: ConfigRepository,
+    configRepository: ConfigRepository,
 ) : Interceptor {
 
-    private val password by lazy {
-        runBlocking {
-            configRepository.getConfigByKey(SettingsKey.JIM_API_PASSWORD)?.value ?: ""
-        }
-    }
+    private val password by RefreshableConfig(configRepository, SettingsKey.JIM_API_PASSWORD)
 
     private fun sha256KeyGen(input: String): SecretKey {
         val md = MessageDigest.getInstance("SHA-256")
